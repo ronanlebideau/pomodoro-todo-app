@@ -1,20 +1,17 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { Calendar as CalendarIcon, X } from 'lucide-svelte';
+	import { X } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
 	export let currentDate: string = '';
 	export let isOpen: boolean = false;
 
+	let inputElement: HTMLInputElement;
+
 	function formatDateForInput(dateString: string): string {
 		if (!dateString) return '';
 		return new Date(dateString).toISOString().split('T')[0];
-	}
-
-	function formatDateForDisplay(dateString: string): string {
-		if (!dateString) return '';
-		return new Date(dateString).toLocaleDateString('fr-FR');
 	}
 
 	function handleDateChange(event: Event) {
@@ -32,6 +29,20 @@
 		if (event.key === 'Escape') {
 			closePicker();
 		}
+	}
+
+	// Auto-focus and open calendar when component opens
+	function openCalendar() {
+		if (inputElement) {
+			inputElement.focus();
+			// Trigger click to open native calendar
+			inputElement.click();
+		}
+	}
+
+	// Call openCalendar when isOpen becomes true
+	$: if (isOpen && inputElement) {
+		setTimeout(openCalendar, 100);
 	}
 </script>
 
@@ -62,6 +73,7 @@
 			</div>
 
 			<input
+				bind:this={inputElement}
 				type="date"
 				value={formatDateForInput(currentDate)}
 				on:change={handleDateChange}
