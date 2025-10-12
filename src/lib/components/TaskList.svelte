@@ -18,12 +18,6 @@
 			const priorityOrder = { high: 0, medium: 1, low: 2 };
 			return priorityOrder[a.priority] - priorityOrder[b.priority];
 		}
-		if (sortBy === 'scheduled') {
-			if (!a.scheduledDate && !b.scheduledDate) return 0;
-			if (!a.scheduledDate) return 1;
-			if (!b.scheduledDate) return -1;
-			return a.scheduledDate.localeCompare(b.scheduledDate);
-		}
 		return b.createdAt - a.createdAt;
 	});
 
@@ -94,7 +88,6 @@
 		>
 			<option value="created">Trier par date</option>
 			<option value="priority">Trier par priorité</option>
-			<option value="scheduled">Trier par planning</option>
 		</select>
 	</div>
 
@@ -139,19 +132,6 @@
 												{task.priority === 'high' ? 'Haute' : task.priority === 'medium' ? 'Moyenne' : 'Basse'}
 											</span>
 										</span>
-
-										<!-- Scheduled Time -->
-										{#if task.scheduledDate}
-											<span class="px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400">
-												{new Date(task.scheduledDate).toLocaleDateString('fr-FR')}
-												{#if task.scheduledStartTime}
-													• {task.scheduledStartTime}
-													{#if task.scheduledEndTime}
-														- {task.scheduledEndTime}
-													{/if}
-												{/if}
-											</span>
-										{/if}
 
 										<!-- Tags -->
 										{#each task.tags as tag}

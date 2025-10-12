@@ -5,6 +5,9 @@
 	import TaskForm from '$lib/components/TaskForm.svelte';
 	import TaskList from '$lib/components/TaskList.svelte';
 	import StatsPanel from '$lib/components/StatsPanel.svelte';
+	import { dailyGoalsStore } from '$lib/stores/dailyGoalsStore';
+	import DailyGoalsDisplay from '$lib/components/DailyGoalsDisplay.svelte';
+	import DailyGoalsModal from '$lib/components/DailyGoalsModal.svelte';
 	import { Plus, BarChart3 } from 'lucide-svelte';
 	import type { Task } from '$lib/db';
 
@@ -70,6 +73,9 @@
 
 			<!-- Right Column: Tasks/Timeline/Stats -->
 			<div class="lg:col-span-2 space-y-6">
+				<!-- Daily Goals Display -->
+				<DailyGoalsDisplay />
+
 				<!-- Tabs -->
 				<div class="flex gap-2 border-b border-zinc-800">
 					<button
@@ -101,4 +107,12 @@
 <!-- Task Form Modal -->
 {#if showTaskForm}
 	<TaskForm task={editingTask} onClose={handleCloseForm} />
+{/if}
+
+<!-- Daily Goals Modal -->
+{#if $dailyGoalsStore.showModal}
+	<DailyGoalsModal on:close={() => {
+		dailyGoalsStore.setLastVisitDate();
+		dailyGoalsStore.hideGoalsModal();
+	}} />
 {/if}
