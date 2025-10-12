@@ -4,6 +4,10 @@ export interface Task {
 	id?: number;
 	title: string;
 	description?: string;
+	scheduledDate?: string; // YYYY-MM-DD
+	scheduledStartTime?: string; // HH:mm
+	scheduledEndTime?: string; // HH:mm
+	estimatedMinutes?: number;
 	completed: boolean;
 	tags: string[];
 	priority: 'low' | 'medium' | 'high';
@@ -54,7 +58,7 @@ export class PomodoroDatabase extends Dexie {
 	constructor() {
 		super('PomodoroTodoApp');
 		this.version(1).stores({
-			tasks: '++id, completed, createdAt',
+			tasks: '++id, scheduledDate, completed, createdAt',
 			pomodoroSessions: '++id, taskId, startTime, type',
 			timeLogs: '++id, taskId, startTime, endTime',
 			dailyGoals: '++id, date, createdAt'

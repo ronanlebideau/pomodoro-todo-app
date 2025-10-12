@@ -8,6 +8,10 @@
 
 	let title = task?.title || '';
 	let description = task?.description || '';
+	let scheduledDate = task?.scheduledDate || '';
+	let scheduledStartTime = task?.scheduledStartTime || '';
+	let scheduledEndTime = task?.scheduledEndTime || '';
+	let estimatedMinutes = task?.estimatedMinutes || '';
 	let priority: 'low' | 'medium' | 'high' = task?.priority || 'medium';
 	let tags = task?.tags.join(', ') || '';
 
@@ -17,6 +21,10 @@
 		const taskData = {
 			title: title.trim(),
 			description: description.trim(),
+			scheduledDate: scheduledDate || undefined,
+			scheduledStartTime: scheduledStartTime || undefined,
+			scheduledEndTime: scheduledEndTime || undefined,
+			estimatedMinutes: estimatedMinutes ? parseInt(String(estimatedMinutes)) : undefined,
 			priority,
 			tags: tags.split(',').map(t => t.trim()).filter(Boolean),
 			completed: task?.completed || false
@@ -109,6 +117,65 @@
 						/>
 						<span class="text-sm text-zinc-300">Haute</span>
 					</label>
+				</div>
+			</div>
+
+			<!-- Scheduling Section -->
+			<div class="border-t border-neutral-700 pt-4 mt-4">
+				<h3 class="text-sm font-medium text-white mb-3">Planification (optionnel)</h3>
+
+				<!-- Date -->
+				<div class="mb-3">
+					<label for="scheduled-date" class="block text-sm font-medium text-neutral-300 mb-2">
+						Date prévue
+					</label>
+					<input
+						id="scheduled-date"
+						type="date"
+						bind:value={scheduledDate}
+						class="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+					/>
+				</div>
+
+				<!-- Time Range -->
+				<div class="grid grid-cols-2 gap-3 mb-3">
+					<div>
+						<label for="start-time" class="block text-sm font-medium text-neutral-300 mb-2">
+							Heure de début
+						</label>
+						<input
+							id="start-time"
+							type="time"
+							bind:value={scheduledStartTime}
+							class="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						/>
+					</div>
+					<div>
+						<label for="end-time" class="block text-sm font-medium text-neutral-300 mb-2">
+							Heure de fin
+						</label>
+						<input
+							id="end-time"
+							type="time"
+							bind:value={scheduledEndTime}
+							class="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						/>
+					</div>
+				</div>
+
+				<!-- Estimated Duration -->
+				<div>
+					<label for="estimated-minutes" class="block text-sm font-medium text-neutral-300 mb-2">
+						Durée estimée (minutes)
+					</label>
+					<input
+						id="estimated-minutes"
+						type="number"
+						bind:value={estimatedMinutes}
+						placeholder="Ex: 60"
+						min="1"
+						class="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+					/>
 				</div>
 			</div>
 

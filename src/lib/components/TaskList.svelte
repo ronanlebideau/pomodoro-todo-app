@@ -133,6 +133,17 @@
 											</span>
 										</span>
 
+										<!-- Scheduled Date -->
+										{#if task.scheduledDate}
+											<button
+												on:click={() => onEditTask(task)}
+												class="px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-colors"
+												title="Cliquer pour modifier la date"
+											>
+												📅 {new Date(task.scheduledDate).toLocaleDateString('fr-FR')}
+											</button>
+										{/if}
+
 										<!-- Tags -->
 										{#each task.tags as tag}
 											<span class="px-2 py-1 rounded bg-zinc-800 text-zinc-400">

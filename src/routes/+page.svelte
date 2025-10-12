@@ -8,13 +8,15 @@
 	import { dailyGoalsStore } from '$lib/stores/dailyGoalsStore';
 	import DailyGoalsDisplay from '$lib/components/DailyGoalsDisplay.svelte';
 	import DailyGoalsModal from '$lib/components/DailyGoalsModal.svelte';
-	import { Plus, BarChart3 } from 'lucide-svelte';
+	import DayTimeline from '$lib/components/DayTimeline.svelte';
+	import { Plus, Calendar, BarChart3 } from 'lucide-svelte';
 	import type { Task } from '$lib/db';
 
 	let showTaskForm = false;
 	let editingTask: Task | null = null;
 	let selectedTaskId: number | null = null;
-	let activeTab: 'tasks' | 'stats' = 'tasks';
+	let activeTab: 'tasks' | 'planning' | 'stats' = 'tasks';
+	let selectedDate = new Date().toISOString().split('T')[0];
 
 	onMount(async () => {
 		await taskStore.loadTasks();
@@ -85,6 +87,13 @@
 						Tâches
 					</button>
 					<button
+						on:click={() => activeTab = 'planning'}
+						class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'planning' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
+					>
+						<Calendar class="w-4 h-4" />
+						Planning
+					</button>
+					<button
 						on:click={() => activeTab = 'stats'}
 						class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'stats' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
 					>
@@ -96,6 +105,21 @@
 				<!-- Tab Content -->
 				{#if activeTab === 'tasks'}
 					<TaskList onEditTask={handleEditTask} onSelectTask={handleSelectTask} />
+				{:else if activeTab === 'planning'}
+					<div class="space-y-4">
+						<div class="flex items-center gap-4">
+							<label for="date-picker" class="text-sm font-medium text-zinc-300">
+								Sélectionner une date :
+							</label>
+							<input
+								id="date-picker"
+								type="date"
+								bind:value={selectedDate}
+								class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+							/>
+						</div>
+						<DayTimeline {selectedDate} />
+					</div>
 				{:else if activeTab === 'stats'}
 					<StatsPanel />
 				{/if}
