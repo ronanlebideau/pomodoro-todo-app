@@ -8,9 +8,6 @@
 
 	let title = task?.title || '';
 	let description = task?.description || '';
-	let scheduledDate = task?.scheduledDate || '';
-	let scheduledStartTime = task?.scheduledStartTime || '';
-	let scheduledEndTime = task?.scheduledEndTime || '';
 	let priority: 'low' | 'medium' | 'high' = task?.priority || 'medium';
 	let tags = task?.tags.join(', ') || '';
 
@@ -20,9 +17,6 @@
 		const taskData = {
 			title: title.trim(),
 			description: description.trim(),
-			scheduledDate: scheduledDate || undefined,
-			scheduledStartTime: scheduledStartTime || undefined,
-			scheduledEndTime: scheduledEndTime || undefined,
 			priority,
 			tags: tags.split(',').map(t => t.trim()).filter(Boolean),
 			completed: task?.completed || false
@@ -63,7 +57,7 @@
 					type="text"
 					bind:value={title}
 					required
-					class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+					class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					placeholder="Ex: Préparer la présentation"
 				/>
 			</div>
@@ -77,46 +71,9 @@
 					id="description"
 					bind:value={description}
 					rows="3"
-					class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+					class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					placeholder="Détails de la tâche..."
 				/>
-			</div>
-
-			<!-- Date and Time -->
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-				<div>
-					<label for="date" class="block text-sm font-medium text-zinc-300 mb-2">
-						Date
-					</label>
-					<input
-						id="date"
-						type="date"
-						bind:value={scheduledDate}
-						class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-					/>
-				</div>
-				<div>
-					<label for="start-time" class="block text-sm font-medium text-zinc-300 mb-2">
-						Heure début
-					</label>
-					<input
-						id="start-time"
-						type="time"
-						bind:value={scheduledStartTime}
-						class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-					/>
-				</div>
-				<div>
-					<label for="end-time" class="block text-sm font-medium text-zinc-300 mb-2">
-						Heure fin
-					</label>
-					<input
-						id="end-time"
-						type="time"
-						bind:value={scheduledEndTime}
-						class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-					/>
-				</div>
 			</div>
 
 			<!-- Priority -->
@@ -164,7 +121,7 @@
 					id="tags"
 					type="text"
 					bind:value={tags}
-					class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+					class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					placeholder="Ex: travail, urgent, projet"
 				/>
 			</div>
@@ -173,7 +130,7 @@
 			<div class="flex gap-3 pt-4">
 				<button
 					type="submit"
-					class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+					class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
 				>
 					{task ? 'Mettre à jour' : 'Créer'}
 				</button>
