@@ -1,13 +1,34 @@
 <script lang="ts">
 	import { taskStore } from '$lib/stores/taskStore';
 	import { Check, Clock, Edit, Trash2, Play, Square } from 'lucide-svelte';
-	import type { Task } from '$lib/db';
+	import InlineDatePicker from './InlineDatePicker.svelte';
 
 	export let onEditTask: (task: Task) => void;
 	export let onSelectTask: (taskId: number) => void;
 
 	let filter: 'all' | 'active' | 'completed' = 'all';
 	let sortBy: 'created' | 'priority' | 'scheduled' = 'created';
+
+	let openDatePickerTaskId: number | null = null;
+
+	async function handleDateChange(taskId: number, newDate: string) {
+		try {
+			await taskStore.updateTask(taskId, {
+				scheduledDate: newDate || undefined
+			});
+			openDatePickerTaskId = null;
+		} catch (error) {
+			console.error('Error updating task date:', error);
+		}
+	}
+
+	function openDatePicker(taskId: number) {
+		openDatePickerTaskId = taskId;
+	}
+
+	function closeDatePicker() {
+		openDatePickerTaskId = null;
+	}
 
 	$: filteredTasks = $taskStore.tasks.filter(task => {
 		if (filter === 'active') return !task.completed;
@@ -135,13 +156,21 @@
 
 										<!-- Scheduled Date -->
 										{#if task.scheduledDate}
-											<button
-												on:click={() => onEditTask(task)}
-												class="px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-colors"
-												title="Cliquer pour modifier la date"
-											>
-												📅 {new Date(task.scheduledDate).toLocaleDateString('fr-FR')}
-											</button>
+											<div class="relative">
+												<button
+													on:click={() => openDatePicker(task.id!)}
+													class="px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 transition-colors"
+													title="Cliquer pour modifier la date"
+												>
+													📅 {new Date(task.scheduledDate).toLocaleDateString('fr-FR')}
+												</button>
+												<InlineDatePicker
+													currentDate={task.scheduledDate}
+													isOpen={openDatePickerTaskId === task.id}
+													on:dateChange={(event) => handleDateChange(task.id!, event.detail)}
+													on:close={closeDatePicker}
+												/>
+											</div>
 										{/if}
 
 										<!-- Tags -->
