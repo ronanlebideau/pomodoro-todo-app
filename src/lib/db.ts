@@ -9,7 +9,6 @@ export interface Task {
 	scheduledEndTime?: string; // HH:mm
 	estimatedMinutes?: number;
 	completed: boolean;
-	completedAt?: number; // Date à laquelle la tâche a été marquée comme terminée
 	tags: string[];
 	priority: 'low' | 'medium' | 'high';
 	createdAt: number;
@@ -29,38 +28,25 @@ export interface PomodoroSession {
 
 export interface TimeLog {
 	id?: number;
-	taskId?: number;
+	taskId: number;
 	startTime: number;
 	endTime?: number;
 	durationMinutes?: number;
-}
-
-export interface DailyGoal {
-	id?: number;
-	date: string; // YYYY-MM-DD format
-	goal1: string;
-	goal2: string;
-	goal3: string;
-	completed1: boolean;
-	completed2: boolean;
-	completed3: boolean;
-	createdAt: number;
-	updatedAt: number;
+	sessionId?: number; // Link to PomodoroSession if created during Pomodoro
+	manual: boolean; // true if manually started, false if from Pomodoro
 }
 
 export class PomodoroDatabase extends Dexie {
 	tasks!: Table<Task>;
 	pomodoroSessions!: Table<PomodoroSession>;
 	timeLogs!: Table<TimeLog>;
-	dailyGoals!: Table<DailyGoal>;
 
 	constructor() {
-		super('RorodoroTodoApp');
-		this.version(2).stores({
+		super('PomodoroTodoApp');
+		this.version(1).stores({
 			tasks: '++id, scheduledDate, completed, createdAt',
 			pomodoroSessions: '++id, taskId, startTime, type',
-			timeLogs: '++id, taskId, startTime, endTime',
-			dailyGoals: '++id, date, createdAt'
+			timeLogs: '++id, taskId, startTime, endTime'
 		});
 	}
 }

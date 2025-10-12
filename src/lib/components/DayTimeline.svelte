@@ -8,7 +8,7 @@
 		task => task.scheduledDate === selectedDate && task.scheduledStartTime
 	);
 
-	const hours = Array.from({ length: 10 }, (_, i) => i + 9); // 9h à 18h
+	const hours = Array.from({ length: 24 }, (_, i) => i);
 
 	function getTasksForHour(hour: number): Task[] {
 		return scheduledTasks.filter(task => {
@@ -37,9 +37,6 @@
 		<h3 class="text-lg font-semibold text-white">
 			Planning du {new Date(selectedDate).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
 		</h3>
-		<p class="text-sm text-zinc-400 mt-1">
-			Horaires de journée (9h - 18h)
-		</p>
 	</div>
 
 	<div class="max-h-[600px] overflow-y-auto">

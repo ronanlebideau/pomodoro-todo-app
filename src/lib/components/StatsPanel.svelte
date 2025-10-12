@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Target, CheckCircle, Clock, Download } from 'lucide-svelte';
 	import { db } from '$lib/db';
 	import { taskStore } from '$lib/stores/taskStore';
+	import { Download, Clock, CheckCircle, Target } from 'lucide-svelte';
 
 	let totalTasks = 0;
 	let completedTasks = 0;
@@ -28,10 +28,8 @@
 		// Calculate time per task
 		const taskTimeMap = new Map<number, number>();
 		for (const log of timeLogs) {
-			if (log.taskId) {
-				const current = taskTimeMap.get(log.taskId) || 0;
-				taskTimeMap.set(log.taskId, current + (log.durationMinutes || 0));
-			}
+			const current = taskTimeMap.get(log.taskId) || 0;
+			taskTimeMap.set(log.taskId, current + (log.durationMinutes || 0));
 		}
 
 		taskStats = await Promise.all(
@@ -53,7 +51,7 @@
 		const hours = Math.floor(minutes / 60);
 		const mins = minutes % 60;
 		if (hours > 0) {
-			return `${hours}h ${mins.toString().padStart(2, '0')}min`;
+			return `${hours}h ${mins}min`;
 		}
 		return `${mins}min`;
 	}
