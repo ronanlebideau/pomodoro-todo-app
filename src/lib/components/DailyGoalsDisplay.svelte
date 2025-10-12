@@ -130,10 +130,10 @@
 	{#if currentGoals && (currentGoals.goal1 || currentGoals.goal2 || currentGoals.goal3)}
 		<div class="mt-3 flex items-center justify-between text-xs text-neutral-400">
 			<span>
-				{Math.round((Object.values(currentGoals).filter((value, index) => index >= 3 && index <= 5 && value === true).length / 3) * 100)}% complété
+				{Math.round(((currentGoals.completed1 ? 1 : 0) + (currentGoals.completed2 ? 1 : 0) + (currentGoals.completed3 ? 1 : 0)) / 3 * 100)}% complété
 			</span>
 			<span>
-				{Object.values(currentGoals).filter((value, index) => index >= 3 && index <= 5 && value === true).length}/3 objectifs atteints
+				{(currentGoals.completed1 ? 1 : 0) + (currentGoals.completed2 ? 1 : 0) + (currentGoals.completed3 ? 1 : 0)}/3 objectifs atteints
 			</span>
 		</div>
 	{/if}
