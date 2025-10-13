@@ -1,4 +1,5 @@
 import { writable, derived } from 'svelte/store';
+import { browser } from '$app/environment';
 import { db } from '$lib/db';
 import type { PomodoroSession } from '$lib/db';
 
@@ -26,6 +27,7 @@ interface PomodoroStoreState {
 	completedSessions: number;
 	currentSessionId: number | null;
 	config: PomodoroConfig;
+	startTime?: number; // Heure de départ du timer actuel
 }
 
 const initialState: PomodoroStoreState = {
@@ -40,101 +42,117 @@ const initialState: PomodoroStoreState = {
 
 function createPomodoroStore() {
 	const { subscribe, set, update } = writable<PomodoroStoreState>(initialState);
-	let intervalId: number | null = null;
+	let intervalId: ReturnType<typeof setInterval> | null = null;
 
 	return {
 		subscribe,
 		
 		startFocus: async (taskId: number | null = null) => {
+			const now = Date.now();
 			update(state => {
 				const duration = state.config.focusDuration * 60;
 				return {
 					...state,
-					state: 'focus',
+					state: 'focus' as PomodoroState,
 					currentTaskId: taskId,
 					remainingSeconds: duration,
-					totalSeconds: duration
+					totalSeconds: duration,
+					startTime: now
 				};
 			});
-			
-			// Create session in DB
-			const session: PomodoroSession = {
-				taskId: taskId ?? undefined,
-				type: 'focus',
-				durationMinutes: defaultConfig.focusDuration,
-				startTime: Date.now(),
-				completed: false,
-				interrupted: false
-			};
-			const sessionId = await db.pomodoroSessions.add(session);
-			update(state => ({ ...state, currentSessionId: sessionId as number }));
-			
-			startTimer();
+
+			try {
+				const session: PomodoroSession = {
+					taskId: taskId ?? undefined,
+					type: 'focus',
+					durationMinutes: defaultConfig.focusDuration,
+					startTime: now,
+					completed: false,
+					interrupted: false
+				};
+				const sessionId = await db.addPomodoroSession(session);
+				update(state => ({ ...state, currentSessionId: sessionId as number }));
+			} catch (error) {
+				console.error('Erreur création session DB:', error);
+			}
+
+			startTick();
 		},
 
 		startBreak: async (isLong: boolean = false) => {
+			const now = Date.now();
 			update(state => {
-				const duration = isLong 
-					? state.config.longBreakDuration * 60 
+				const duration = isLong
+					? state.config.longBreakDuration * 60
 					: state.config.shortBreakDuration * 60;
 				return {
 					...state,
-					state: isLong ? 'long-break' : 'short-break',
+					state: isLong ? 'long-break' as PomodoroState : 'short-break' as PomodoroState,
 					remainingSeconds: duration,
-					totalSeconds: duration
+					totalSeconds: duration,
+					startTime: now
 				};
 			});
 
-			// Create break session in DB
-			let currentState: PomodoroStoreState;
-			update(state => {
-				currentState = state;
-				return state;
-			});
-			
-			const session: PomodoroSession = {
-				type: isLong ? 'long-break' : 'short-break',
-				durationMinutes: isLong ? defaultConfig.longBreakDuration : defaultConfig.shortBreakDuration,
-				startTime: Date.now(),
-				completed: false,
-				interrupted: false
-			};
-			const sessionId = await db.pomodoroSessions.add(session);
-			update(state => ({ ...state, currentSessionId: sessionId as number }));
+			try {
+				const session: PomodoroSession = {
+					type: isLong ? 'long-break' : 'short-break',
+					durationMinutes: isLong ? defaultConfig.longBreakDuration : defaultConfig.shortBreakDuration,
+					startTime: now,
+					completed: false,
+					interrupted: false
+				};
+				const sessionId = await db.addPomodoroSession(session);
+				update(state => ({ ...state, currentSessionId: sessionId as number }));
+			} catch (error) {
+				console.error('Erreur création session DB:', error);
+			}
 
-			startTimer();
+			startTick();
 		},
 
 		pause: () => {
-			stopTimer();
-			update(state => ({ ...state, state: 'paused' }));
+			update(state => ({
+				...state,
+				state: 'paused' as PomodoroState,
+				startTime: undefined
+			}));
+			stopTick();
 		},
 
 		resume: () => {
+			const now = Date.now();
 			update(state => {
 				if (state.state === 'paused') {
-					return { ...state, state: state.remainingSeconds > 0 ? 'focus' : 'idle' };
+					return {
+						...state,
+						state: state.remainingSeconds > 0 ? 'focus' as PomodoroState : 'idle' as PomodoroState,
+						startTime: now
+					};
 				}
 				return state;
 			});
-			startTimer();
+			startTick();
 		},
 
 		stop: async () => {
-			stopTimer();
-			
-			// Mark current session as interrupted
-			let currentState: PomodoroStoreState;
-			update(state => {
-				currentState = state;
-				return state;
-			});
-			
-			if (currentState!.currentSessionId) {
-				await db.pomodoroSessions.update(currentState!.currentSessionId, {
-					interrupted: true,
-					endTime: Date.now()
+			stopTick();
+
+			try {
+				let currentState: PomodoroStoreState;
+				update(state => {
+					currentState = state;
+					return state;
 				});
+
+				if (currentState!.currentSessionId) {
+					await db.updatePomodoroSession(currentState!.currentSessionId, {
+						interrupted: true,
+						endTime: Date.now()
+					});
+				}
+			} catch (error) {
+				console.error('Erreur mise à jour session DB:', error);
 			}
 
 			set(initialState);
@@ -147,23 +165,25 @@ function createPomodoroStore() {
 				return state;
 			});
 
-			// Mark session as completed
-			if (currentState!.currentSessionId) {
-				await db.pomodoroSessions.update(currentState!.currentSessionId, {
-					completed: true,
-					endTime: Date.now()
-				});
+			try {
+				if (currentState!.currentSessionId) {
+					await db.updatePomodoroSession(currentState!.currentSessionId, {
+						completed: true,
+						endTime: Date.now()
+					});
+				}
+
+				if (currentState!.state === 'focus') {
+					update(state => ({
+						...state,
+						completedSessions: state.completedSessions + 1
+					}));
+				}
+			} catch (error) {
+				console.error('Erreur mise à jour session DB:', error);
 			}
 
-			// Increment completed sessions if it was a focus session
-			if (currentState!.state === 'focus') {
-				update(state => ({ 
-					...state, 
-					completedSessions: state.completedSessions + 1 
-				}));
-			}
-
-			stopTimer();
+			stopTick();
 			set({ ...initialState, completedSessions: currentState!.completedSessions });
 		},
 
@@ -175,44 +195,59 @@ function createPomodoroStore() {
 		},
 
 		reset: () => {
-			stopTimer();
+			stopTick();
 			set(initialState);
 		}
 	};
 
-	function startTimer() {
-		if (intervalId !== null) return;
+	function startTick() {
+		if (intervalId) return;
 
-		intervalId = window.setInterval(() => {
+		// Premier tick immédiat pour démarrer le timer sans délai
+		update(state => {
+			if (state.startTime && (state.state === 'focus' || state.state === 'short-break' || state.state === 'long-break')) {
+				const now = Date.now();
+				const elapsedSeconds = Math.floor((now - state.startTime) / 1000);
+				const remaining = Math.max(0, state.totalSeconds - elapsedSeconds);
+				return { ...state, remainingSeconds: remaining };
+			}
+			return state;
+		});
+
+		// Puis démarrer l'intervalle normal
+		intervalId = setInterval(() => {
 			update(state => {
-				if (state.remainingSeconds <= 0) {
-					// Timer finished
-					stopTimer();
-					pomodoroStore.completeSession();
-					
-					// Show notification
-					if ('Notification' in window && Notification.permission === 'granted') {
-						new Notification('Pomodoro terminé !', {
-							body: state.state === 'focus' 
-								? 'Temps de faire une pause !' 
-								: 'Prêt à reprendre le travail ?',
-							icon: '/favicon.png'
-						});
+				if (state.startTime && (state.state === 'focus' || state.state === 'short-break' || state.state === 'long-break')) {
+					const now = Date.now();
+					const elapsedSeconds = Math.floor((now - state.startTime) / 1000);
+					const remaining = Math.max(0, state.totalSeconds - elapsedSeconds);
+
+					if (remaining <= 0) {
+						stopTick();
+
+						if (browser && 'Notification' in globalThis && Notification.permission === 'granted') {
+							new Notification('Pomodoro terminé !', {
+								body: state.state === 'focus'
+									? 'Temps de faire une pause !'
+									: 'Prêt à reprendre le travail ?',
+								icon: '/favicon.png'
+							});
+						}
+
+						pomodoroStore.completeSession();
+						return { ...state, remainingSeconds: 0, state: 'idle' as PomodoroState };
 					}
-					
-					return state;
+
+					return { ...state, remainingSeconds: remaining };
 				}
 
-				return {
-					...state,
-					remainingSeconds: state.remainingSeconds - 1
-				};
+				return state;
 			});
 		}, 1000);
 	}
 
-	function stopTimer() {
-		if (intervalId !== null) {
+	function stopTick() {
+		if (intervalId) {
 			clearInterval(intervalId);
 			intervalId = null;
 		}

@@ -81,43 +81,48 @@
 					rows="3"
 					class="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					placeholder="Détails de la tâche..."
-				/>
+				></textarea>
 			</div>
 
 			<!-- Priority -->
 			<div>
-				<label class="block text-sm font-medium text-zinc-300 mb-2">
-					Priorité
-				</label>
-				<div class="flex gap-3">
-					<label class="flex items-center gap-2 cursor-pointer">
-						<input
-							type="radio"
-							bind:group={priority}
-							value="low"
-							class="text-green-500 focus:ring-green-500"
-						/>
-						<span class="text-sm text-zinc-300">Basse</span>
-					</label>
-					<label class="flex items-center gap-2 cursor-pointer">
-						<input
-							type="radio"
-							bind:group={priority}
-							value="medium"
-							class="text-yellow-500 focus:ring-yellow-500"
-						/>
-						<span class="text-sm text-zinc-300">Moyenne</span>
-					</label>
-					<label class="flex items-center gap-2 cursor-pointer">
-						<input
-							type="radio"
-							bind:group={priority}
-							value="high"
-							class="text-red-500 focus:ring-red-500"
-						/>
-						<span class="text-sm text-zinc-300">Haute</span>
-					</label>
-				</div>
+				<fieldset>
+					<legend class="block text-sm font-medium text-zinc-300 mb-2">
+						Priorité
+					</legend>
+					<div class="flex gap-3">
+						<label class="flex items-center gap-2 cursor-pointer">
+							<input
+								id="priority-low"
+								type="radio"
+								bind:group={priority}
+								value="low"
+								class="text-green-500 focus:ring-green-500"
+							/>
+							<span class="text-sm text-zinc-300">Basse</span>
+						</label>
+						<label class="flex items-center gap-2 cursor-pointer">
+							<input
+								id="priority-medium"
+								type="radio"
+								bind:group={priority}
+								value="medium"
+								class="text-yellow-500 focus:ring-yellow-500"
+							/>
+							<span class="text-sm text-zinc-300">Moyenne</span>
+						</label>
+						<label class="flex items-center gap-2 cursor-pointer">
+							<input
+								id="priority-high"
+								type="radio"
+								bind:group={priority}
+								value="high"
+								class="text-red-500 focus:ring-red-500"
+							/>
+							<span class="text-sm text-zinc-300">Haute</span>
+						</label>
+					</div>
+				</fieldset>
 			</div>
 
 			<!-- Scheduling Section -->

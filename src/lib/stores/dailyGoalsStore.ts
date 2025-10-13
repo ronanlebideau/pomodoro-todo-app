@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 import { db } from '$lib/db';
 import type { DailyGoal } from '$lib/db';
 
@@ -24,7 +25,7 @@ function createDailyGoalsStore() {
 			const today = new Date().toISOString().split('T')[0];
 
 			try {
-				const goals = await db.dailyGoals.where('date').equals(today).first();
+				const goals = await db.getDailyGoalByDate(today);
 				update(state => ({ ...state, currentGoals: goals || null, loading: false }));
 			} catch (error) {
 				console.error('Error loading today\'s goals:', error);
@@ -50,11 +51,11 @@ function createDailyGoalsStore() {
 
 			try {
 				// Check if goals already exist for today
-				const existingGoals = await db.dailyGoals.where('date').equals(today).first();
+				const existingGoals = await db.getDailyGoalByDate(today);
 
 				if (existingGoals) {
 					// Update existing goals
-					await db.dailyGoals.update(existingGoals.id!, {
+					await db.updateDailyGoal(existingGoals.id!, {
 						...goalsData,
 						updatedAt: now
 					});
@@ -64,7 +65,7 @@ function createDailyGoalsStore() {
 					}));
 				} else {
 					// Create new goals
-					const id = await db.dailyGoals.add(goalsData);
+					const id = await db.addDailyGoal(goalsData);
 					update(state => ({
 						...state,
 						currentGoals: { ...goalsData, id: id as number }
@@ -91,7 +92,7 @@ function createDailyGoalsStore() {
 			const currentValue = currentState.currentGoals[completedField] as boolean;
 
 			try {
-				await db.dailyGoals.update(currentState.currentGoals.id, {
+				await db.updateDailyGoal(currentState.currentGoals.id, {
 					[completedField]: !currentValue,
 					updatedAt: Date.now()
 				});
@@ -122,12 +123,14 @@ function createDailyGoalsStore() {
 		},
 
 		isNewDay: (): boolean => {
+			if (!browser) return false; // côté serveur: valeur par défaut
 			const today = new Date().toISOString().split('T')[0];
 			const lastVisit = localStorage.getItem('lastVisitDate');
 			return lastVisit !== today;
 		},
 
 		setLastVisitDate: () => {
+			if (!browser) return; // côté serveur: ne rien faire
 			const today = new Date().toISOString().split('T')[0];
 			localStorage.setItem('lastVisitDate', today);
 		},
@@ -168,7 +171,7 @@ function createDailyGoalsStore() {
 					updatedAt: now
 				};
 
-				const id = await db.dailyGoals.add(goalsData);
+				const id = await db.addDailyGoal(goalsData);
 				update(state => ({
 					...state,
 					currentGoals: { ...goalsData, id: id as number }
@@ -176,7 +179,7 @@ function createDailyGoalsStore() {
 			} else {
 				// Update existing goals
 				const goalField = `goal${goalNumber}` as keyof DailyGoal;
-				await db.dailyGoals.update(currentState.currentGoals.id, {
+				await db.updateDailyGoal(currentState.currentGoals.id, {
 					[goalField]: goalText,
 					updatedAt: Date.now()
 				});

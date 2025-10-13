@@ -15,14 +15,14 @@
 	});
 
 	async function loadStats() {
-		const tasks = await db.tasks.toArray();
+		const tasks = await db.getTasks();
 		totalTasks = tasks.length;
 		completedTasks = tasks.filter(t => t.completed).length;
 
-		const timeLogs = await db.timeLogs.toArray();
+		const timeLogs = await db.getTimeLogs();
 		totalMinutes = timeLogs.reduce((sum, log) => sum + (log.durationMinutes || 0), 0);
 
-		const sessions = await db.pomodoroSessions.toArray();
+		const sessions = await db.getPomodoroSessions();
 		totalSessions = sessions.filter(s => s.completed && s.type === 'focus').length;
 
 		// Calculate time per task
@@ -37,7 +37,7 @@
 				.sort((a, b) => b[1] - a[1])
 				.slice(0, 5)
 				.map(async ([taskId, minutes]) => {
-					const task = await db.tasks.get(taskId);
+					const task = await db.getTask(taskId);
 					return {
 						taskId,
 						title: task?.title || 'Tâche supprimée',

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { taskStore } from '$lib/stores/taskStore';
-	import { Check, Clock, Edit, Trash2, Play, Square, Calendar, Plus } from 'lucide-svelte';
+	import { Check, Clock, Edit, Trash2, Play, Square, Calendar } from 'lucide-svelte';
 	import type { Task } from '$lib/db';
 	import InlineDatePicker from './InlineDatePicker.svelte';
 
 	export let onEditTask: (task: Task) => void;
+	export let onSelectTask: (taskId: number) => void;
 
 	let filter: 'all' | 'active' | 'completed' = 'all';
 	let sortBy: 'scheduled' | 'priority' = 'scheduled';
@@ -57,31 +58,25 @@ onDestroy(() => {
 		}
 	}
 
-	$: filteredTasks = $taskStore.tasks ? $taskStore.tasks.filter(task => {
+	$: filteredTasks = $taskStore.tasks.filter(task => {
 		if (filter === 'active') return !task.completed;
 		if (filter === 'completed') return task.completed;
 		return true;
 	}).sort((a, b) => {
-		// Pour le filtre 'all', trier par statut (actives d'abord, puis terminées)
-		if (filter === 'all') {
-			if (a.completed !== b.completed) {
-				return a.completed ? 1 : -1; // Tâches actives (non terminées) en premier
-			}
-		}
-
-		// Tri secondaire selon le critère choisi
 		if (sortBy === 'priority') {
 			const priorityOrder = { high: 0, medium: 1, low: 2 };
 			return priorityOrder[a.priority] - priorityOrder[b.priority];
 		}
 		if (sortBy === 'scheduled') {
+			// Trier par date programmée : les tâches sans date vont à la fin
 			if (!a.scheduledDate && !b.scheduledDate) return b.createdAt - a.createdAt;
-			if (!a.scheduledDate) return 1;
-			if (!b.scheduledDate) return -1;
+			if (!a.scheduledDate) return 1; // a va après b
+			if (!b.scheduledDate) return -1; // a va avant b
 			return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
 		}
+		// Tri par défaut : date de création (du plus récent au plus ancien)
 		return b.createdAt - a.createdAt;
-	}) : [];
+	});
 
 	async function handleToggleComplete(id: number) {
 		await taskStore.toggleComplete(id);
@@ -155,61 +150,6 @@ onDestroy(() => {
 
 	<!-- Task List -->
 	<div class="space-y-3">
-		<!-- Nouvelle tâche card -->
-		<div class="bg-zinc-900 border-2 border-dashed border-zinc-700 rounded-xl p-4 hover:border-zinc-600 hover:bg-zinc-800/50 transition-all duration-200 cursor-pointer group"
-			 role="button"
-			 tabindex="0"
-			 on:click={() => onEditTask({
-				 	id: undefined,
-				 	title: '',
-				 	description: '',
-				 	completed: false,
-				 	priority: 'medium',
-				 	scheduledDate: undefined,
-				 	scheduledStartTime: undefined,
-				 	scheduledEndTime: undefined,
-				 	estimatedMinutes: undefined,
-				 	tags: [],
-				 	createdAt: Date.now(),
-				 	updatedAt: Date.now()
-				 } as Task)}
-			 on:keydown={(e) => e.key === 'Enter' && onEditTask({
-				 	id: undefined,
-				 	title: '',
-				 	description: '',
-				 	completed: false,
-				 	priority: 'medium',
-				 	scheduledDate: undefined,
-				 	scheduledStartTime: undefined,
-				 	scheduledEndTime: undefined,
-				 	estimatedMinutes: undefined,
-				 	tags: [],
-				 	createdAt: Date.now(),
-				 	updatedAt: Date.now()
-				 } as Task)}>
-			<div class="flex items-center gap-4">
-				<!-- Plus icon -->
-				<div class="w-5 h-5 rounded-full bg-zinc-700 flex items-center justify-center group-hover:bg-zinc-600 transition-colors">
-					<Plus class="w-3 h-3 text-zinc-400" />
-				</div>
-
-				<!-- Content -->
-				<div class="flex-1">
-					<h3 class="text-zinc-400 font-medium group-hover:text-zinc-300 transition-colors">
-						Nouvelle tâche
-					</h3>
-					<p class="text-sm text-zinc-500 mt-1">
-						Cliquez pour ajouter une tâche
-					</p>
-				</div>
-
-				<!-- Action hint -->
-				<div class="text-zinc-500 group-hover:text-zinc-400 transition-colors">
-					<Plus class="w-4 h-4" />
-				</div>
-			</div>
-		</div>
-
 		{#if filteredTasks.length === 0}
 			<div class="text-center py-12 text-zinc-500">
 				Aucune tâche {filter === 'active' ? 'active' : filter === 'completed' ? 'complétée' : ''}
@@ -342,6 +282,13 @@ onDestroy(() => {
 											title="Démarrer le tracking"
 										>
 											<Play class="w-4 h-4" />
+										</button>
+										<button
+											on:click={() => onSelectTask(task.id!)}
+											class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+											title="Utiliser pour Pomodoro"
+										>
+											<Clock class="w-4 h-4" />
 										</button>
 									{/if}
 									<button

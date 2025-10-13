@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 import { db } from '$lib/db';
 import type { Task, TimeLog } from '$lib/db';
 
@@ -20,27 +21,21 @@ function createTaskStore() {
 
 		loadTasks: async () => {
 			update(state => ({ ...state, loading: true }));
-			const tasks = await db.tasks.orderBy('createdAt').reverse().toArray();
+			const tasks = await db.getTasks();
 			update(state => ({ ...state, tasks, loading: false }));
 		},
 
 		addTask: async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-			const now = Date.now();
-			const newTask: Task = {
-				...task,
-				createdAt: now,
-				updatedAt: now
-			};
-			const id = await db.tasks.add(newTask);
+			const id = await db.addTask(task);
 			update(state => ({
 				...state,
-				tasks: [{ ...newTask, id: id as number }, ...state.tasks]
+				tasks: [{ ...task, id, createdAt: Date.now(), updatedAt: Date.now() }, ...state.tasks]
 			}));
 			return id;
 		},
 
 		updateTask: async (id: number, updates: Partial<Task>) => {
-			await db.tasks.update(id, { ...updates, updatedAt: Date.now() });
+			await db.updateTask(id, updates);
 			update(state => ({
 				...state,
 				tasks: state.tasks.map(t => t.id === id ? { ...t, ...updates, updatedAt: Date.now() } : t)
@@ -48,7 +43,7 @@ function createTaskStore() {
 		},
 
 		deleteTask: async (id: number) => {
-			await db.tasks.delete(id);
+			await db.deleteTask(id);
 			update(state => ({
 				...state,
 				tasks: state.tasks.filter(t => t.id !== id)
@@ -56,9 +51,9 @@ function createTaskStore() {
 		},
 
 		toggleComplete: async (id: number) => {
-			const task = await db.tasks.get(id);
+			const task = await db.getTask(id);
 			if (task) {
-				await db.tasks.update(id, { completed: !task.completed, updatedAt: Date.now() });
+				await db.updateTask(id, { completed: !task.completed });
 				update(state => ({
 					...state,
 					tasks: state.tasks.map(t => 
@@ -75,10 +70,10 @@ function createTaskStore() {
 				startTime: Date.now(),
 				manual: true
 			};
-			const id = await db.timeLogs.add(timeLog);
+			const id = await db.addTimeLog(timeLog);
 			update(state => ({
 				...state,
-				activeTimeLog: { ...timeLog, id: id as number }
+				activeTimeLog: { ...timeLog, id }
 			}));
 		},
 
@@ -95,7 +90,7 @@ function createTaskStore() {
 					(endTime - currentState!.activeTimeLog.startTime) / 60000
 				);
 				
-				await db.timeLogs.update(currentState!.activeTimeLog.id, {
+				await db.updateTimeLog(currentState!.activeTimeLog.id, {
 					endTime,
 					durationMinutes
 				});
@@ -105,28 +100,28 @@ function createTaskStore() {
 		},
 
 		getTaskTimeLogs: async (taskId: number) => {
-			return await db.timeLogs.where('taskId').equals(taskId).toArray();
+			const timeLogs = await db.getTimeLogs();
+			return timeLogs.filter(log => log.taskId === taskId);
 		},
 
 		getTotalTimeForTask: async (taskId: number): Promise<number> => {
-			const logs = await db.timeLogs.where('taskId').equals(taskId).toArray();
-			return logs.reduce((total, log) => {
-				if (log.durationMinutes) {
-					return total + log.durationMinutes;
-				}
-				return total;
-			}, 0);
+			const logs = await db.getTimeLogs();
+			return logs
+				.filter(log => log.taskId === taskId && log.durationMinutes)
+				.reduce((total, log) => total + log.durationMinutes!, 0);
 		},
 
 		exportToCSV: async () => {
-			const tasks = await db.tasks.toArray();
-			const timeLogs = await db.timeLogs.toArray();
-			
+			if (!browser) return; // pas de DOM côté serveur
+			const tasks = await db.getTasks();
+			const timeLogs = await db.getTimeLogs();
+
 			// Create CSV content
 			let csv = 'Task ID,Title,Description,Completed,Tags,Priority,Created,Total Minutes\n';
-			
+
 			for (const task of tasks) {
-				const totalMinutes = await taskStore.getTotalTimeForTask(task.id!);
+				const taskLogs = timeLogs.filter(log => log.taskId === task.id && log.durationMinutes);
+				const totalMinutes = taskLogs.reduce((total, log) => total + log.durationMinutes!, 0);
 				const row = [
 					task.id,
 					`"${task.title.replace(/"/g, '""')}"`,
@@ -146,8 +141,20 @@ function createTaskStore() {
 			const a = document.createElement('a');
 			a.href = url;
 			a.download = `pomodoro-tasks-${new Date().toISOString().split('T')[0]}.csv`;
+			document.body.appendChild(a);
 			a.click();
+			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
+		},
+
+		downloadJson: (filename: string, data: string) => {
+			if (!browser) return; // pas de DOM côté serveur
+			const a = document.createElement('a');
+			a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(data);
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
 		}
 	};
 }

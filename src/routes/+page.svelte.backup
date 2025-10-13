@@ -9,24 +9,23 @@
 	import DailyGoalsDisplay from '$lib/components/DailyGoalsDisplay.svelte';
 	import DailyGoalsModal from '$lib/components/DailyGoalsModal.svelte';
 	import DayTimeline from '$lib/components/DayTimeline.svelte';
-	import { Calendar, BarChart3 } from 'lucide-svelte';
+	import { Plus, Calendar, BarChart3 } from 'lucide-svelte';
 	import type { Task } from '$lib/db';
-	import ClientOnly from '$lib/ClientOnly.svelte';
 
 	let showTaskForm = false;
 	let editingTask: Task | null = null;
+	let selectedTaskId: number | null = null;
 	let activeTab: 'tasks' | 'planning' | 'stats' = 'tasks';
-	let selectedDate: string;
+	let selectedDate = new Date().toISOString().split('T')[0];
 
-	// Initialize date only after mount to avoid SSR issues
-	onMount(() => {
-		selectedDate = new Date().toISOString().split('T')[0];
-	});
-
-	// Load stores only on client side to avoid SSR issues
 	onMount(async () => {
 		await taskStore.loadTasks();
 	});
+
+	function handleNewTask() {
+		editingTask = null;
+		showTaskForm = true;
+	}
 
 	function handleEditTask(task: Task) {
 		editingTask = task;
@@ -36,6 +35,10 @@
 	function handleCloseForm() {
 		showTaskForm = false;
 		editingTask = null;
+	}
+
+	function handleSelectTask(taskId: number) {
+		selectedTaskId = taskId;
 	}
 </script>
 
@@ -52,6 +55,13 @@
 					<h1 class="text-2xl font-bold text-white">🍅 Pomodoro Todo</h1>
 					<p class="text-sm text-zinc-400">Planifiez, focalisez, accomplissez</p>
 				</div>
+				<button
+					on:click={handleNewTask}
+					class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+				>
+					<Plus class="w-5 h-5" />
+					Nouvelle tâche
+				</button>
 			</div>
 		</div>
 	</header>
@@ -60,7 +70,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 			<!-- Left Column: Pomodoro Timer -->
 			<div class="lg:col-span-1">
-				<ClientOnly><PomodoroTimer /></ClientOnly>
+				<PomodoroTimer taskId={selectedTaskId} />
 			</div>
 
 			<!-- Right Column: Tasks/Timeline/Stats -->
@@ -94,7 +104,7 @@
 
 				<!-- Tab Content -->
 				{#if activeTab === 'tasks'}
-					<ClientOnly><TaskList onEditTask={handleEditTask} /></ClientOnly>
+					<TaskList onEditTask={handleEditTask} onSelectTask={handleSelectTask} />
 				{:else if activeTab === 'planning'}
 					<div class="space-y-4">
 						<div class="flex items-center gap-4">
@@ -120,13 +130,13 @@
 
 <!-- Task Form Modal -->
 {#if showTaskForm}
-	<ClientOnly><TaskForm task={editingTask} onClose={handleCloseForm} /></ClientOnly>
+	<TaskForm task={editingTask} onClose={handleCloseForm} />
 {/if}
 
 <!-- Daily Goals Modal -->
 {#if $dailyGoalsStore.showModal}
-	<ClientOnly><DailyGoalsModal on:close={() => {
+	<DailyGoalsModal on:close={() => {
 		dailyGoalsStore.setLastVisitDate();
 		dailyGoalsStore.hideGoalsModal();
-	}} /></ClientOnly>
+	}} />
 {/if}
