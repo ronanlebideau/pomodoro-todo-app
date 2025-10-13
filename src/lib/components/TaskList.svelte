@@ -7,7 +7,7 @@
 
 	export let onEditTask: (task: Task) => void;
 
-	let filter: 'all' | 'active' | 'completed' = 'all';
+	let filter: 'active' | 'completed' = 'active';
 	let sortBy: 'scheduled' | 'priority' = 'scheduled';
 
 	let openDatePickerTaskId: number | null = null;
@@ -62,13 +62,6 @@ onDestroy(() => {
 		if (filter === 'completed') return task.completed;
 		return true;
 	}).sort((a, b) => {
-		// Pour le filtre 'all', trier par statut (actives d'abord, puis terminées)
-		if (filter === 'all') {
-			if (a.completed !== b.completed) {
-				return a.completed ? 1 : -1; // Tâches actives (non terminées) en premier
-			}
-		}
-
 		// Tri secondaire selon le critère choisi
 		if (sortBy === 'priority') {
 			const priorityOrder = { high: 0, medium: 1, low: 2 };
@@ -124,12 +117,6 @@ onDestroy(() => {
 	<!-- Filters and Sort -->
 	<div class="flex flex-wrap gap-4 items-center justify-between">
 		<div class="flex gap-2">
-			<button
-				on:click={() => filter = 'all'}
-				class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {filter === 'all' ? 'bg-red-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
-			>
-				Toutes
-			</button>
 			<button
 				on:click={() => filter = 'active'}
 				class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {filter === 'active' ? 'bg-red-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
@@ -212,7 +199,7 @@ onDestroy(() => {
 
 		{#if filteredTasks.length === 0}
 			<div class="text-center py-12 text-zinc-500">
-				Aucune tâche {filter === 'active' ? 'active' : filter === 'completed' ? 'complétée' : ''}
+				Aucune tâche {filter === 'active' ? 'active' : 'complétée'}
 			</div>
 		{:else}
 			{#each filteredTasks as task (task.id)}

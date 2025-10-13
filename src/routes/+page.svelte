@@ -9,7 +9,7 @@
 	import DailyGoalsDisplay from '$lib/components/DailyGoalsDisplay.svelte';
 	import DailyGoalsModal from '$lib/components/DailyGoalsModal.svelte';
 	import DayTimeline from '$lib/components/DayTimeline.svelte';
-	import { Calendar, BarChart3 } from 'lucide-svelte';
+	import { Calendar, BarChart3, CheckSquare } from 'lucide-svelte';
 	import type { Task } from '$lib/db';
 	import ClientOnly from '$lib/ClientOnly.svelte';
 
@@ -18,15 +18,43 @@
 	let activeTab: 'tasks' | 'planning' | 'stats' = 'tasks';
 	let selectedDate: string;
 
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
+
 	// Initialize date only after mount to avoid SSR issues
 	onMount(() => {
 		selectedDate = new Date().toISOString().split('T')[0];
 	});
 
+	// Dispatch date change event when selectedDate changes
+	$: if (selectedDate) {
+		dispatch('dateChange', selectedDate);
+	}
+
 	// Load stores only on client side to avoid SSR issues
 	onMount(async () => {
 		await taskStore.loadTasks();
 	});
+
+	function handleCreateTask(date?: string, time?: string) {
+		// Créer une nouvelle tâche avec les valeurs par défaut et les paramètres fournis
+		editingTask = {
+			id: undefined,
+			title: '',
+			description: '',
+			completed: false,
+			priority: 'medium',
+			scheduledDate: date || selectedDate,
+			scheduledStartTime: time,
+			scheduledEndTime: undefined,
+			estimatedMinutes: undefined,
+			tags: [],
+			createdAt: Date.now(),
+			updatedAt: Date.now()
+		} as Task;
+		showTaskForm = true;
+	}
 
 	function handleEditTask(task: Task) {
 		editingTask = task;
@@ -36,6 +64,8 @@
 	function handleCloseForm() {
 		showTaskForm = false;
 		editingTask = null;
+		// Recharger les tâches après fermeture du formulaire
+		taskStore.loadTasks();
 	}
 </script>
 
@@ -72,8 +102,9 @@
 				<div class="flex gap-2 border-b border-zinc-800">
 					<button
 						on:click={() => activeTab = 'tasks'}
-						class="px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'tasks' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
+						class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'tasks' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
 					>
+						<CheckSquare class="w-4 h-4" />
 						Tâches
 					</button>
 					<button
@@ -108,10 +139,10 @@
 								class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500"
 							/>
 						</div>
-						<DayTimeline {selectedDate} />
+						<DayTimeline {selectedDate} {handleCreateTask} on:dateChange={() => {}} />
 					</div>
 				{:else if activeTab === 'stats'}
-					<StatsPanel />
+					<StatsPanel {selectedDate} />
 				{/if}
 			</div>
 		</div>
