@@ -117,9 +117,20 @@ export class PomodoroDatabase {
 	async deleteTask(id: number): Promise<void> {
 		if (!browser) throw new Error('Storage not available');
 
+		// Supprimer la tâche
 		const tasks = await this.getTasks();
 		const filteredTasks = tasks.filter(t => t.id !== id);
 		this.storage!.setItem(this.getStorageKey('tasks'), JSON.stringify(filteredTasks));
+
+		// Supprimer les sessions Pomodoro associées
+		const sessions = await this.getPomodoroSessions();
+		const filteredSessions = sessions.filter(s => s.taskId !== id);
+		this.storage!.setItem(this.getStorageKey('pomodoroSessions'), JSON.stringify(filteredSessions));
+
+		// Supprimer les journaux de temps associés
+		const timeLogs = await this.getTimeLogs();
+		const filteredTimeLogs = timeLogs.filter(t => t.taskId !== id);
+		this.storage!.setItem(this.getStorageKey('timeLogs'), JSON.stringify(filteredTimeLogs));
 	}
 
 	async getTask(id: number): Promise<Task | undefined> {

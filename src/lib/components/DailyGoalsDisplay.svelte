@@ -1,8 +1,31 @@
 <script lang="ts">
 	import { dailyGoalsStore } from '$lib/stores/dailyGoalsStore';
 	import { CheckCircle2, Circle, Target, Edit3, Plus } from 'lucide-svelte';
+	import { browser } from '$app/environment';
 
 	let currentGoals = $dailyGoalsStore.currentGoals;
+
+	// Fonction pour jouer le son de complétion d'objectif
+	function playGoalCompleteSound() {
+		if (!browser) return;
+		
+		try {
+			const audio = new Audio('/sounds/dailygoal-complete.mp3');
+			audio.volume = 0.5; // Ajustez le volume selon les besoins
+			
+			// Gestion des erreurs
+			audio.addEventListener('error', (e) => {
+				console.error('Erreur lors de la lecture du son:', e);
+			});
+			
+			// Lecture du son
+			audio.play().catch(error => {
+				console.warn('Impossible de lire le son de complétion:', error);
+			});
+		} catch (error) {
+			console.warn('Erreur lors de la création de l\'audio:', error);
+		}
+	}
 
 	// Subscribe to store changes
 	dailyGoalsStore.subscribe(state => {
@@ -10,7 +33,16 @@
 	});
 
 	async function toggleGoal(goalNumber: 1 | 2 | 3) {
+		// Vérifier si l'objectif va être coché (et non décoché)
+		const willBeChecked = !getGoalStatus(goalNumber);
+		
+		// Mettre à jour l'état
 		await dailyGoalsStore.toggleGoalCompletion(goalNumber);
+		
+		// Jouer le son uniquement si l'objectif a été coché (et non décoché)
+		if (willBeChecked) {
+			playGoalCompleteSound();
+		}
 	}
 
 	function editGoals() {

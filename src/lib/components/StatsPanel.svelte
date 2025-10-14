@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { db } from '$lib/db';
+	import type { Task } from '$lib/db';
 	import { taskStore } from '$lib/stores/taskStore';
 	import { Download, Clock, CheckCircle, Target, Calendar, BarChart3, TrendingUp, Timer } from 'lucide-svelte';
 
@@ -17,6 +18,7 @@
 	let dayCompletedTasks = 0;
 	let dayMinutes = 0;
 	let daySessions = 0;
+	let dayCompletedTasksList: Task[] = [];
 
 	// Statistiques de la semaine
 	let weekTasks = 0;
@@ -46,6 +48,7 @@
 		const todayTasks = tasks.filter(t => t.scheduledDate === today);
 		dayTasks = todayTasks.length;
 		dayCompletedTasks = todayTasks.filter(t => t.completed).length;
+		dayCompletedTasksList = todayTasks.filter(t => t.completed);
 
 		const todayTimeLogs = timeLogs.filter(log => {
 			const logDate = new Date(log.startTime).toISOString().split('T')[0];
@@ -220,6 +223,53 @@
 								style={`width: ${Math.round((dayCompletedTasks / dayTasks) * 100)}%`}
 							></div>
 						</div>
+					</div>
+				</div>
+			{/if}
+
+			<!-- Completed Tasks List - Day -->
+			{#if dayCompletedTasksList.length > 0}
+				<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+					<h3 class="text-lg font-semibold text-white mb-4">Tâches complétées aujourd'hui</h3>
+					<div class="space-y-3 max-h-80 overflow-y-auto">
+						{#each dayCompletedTasksList as task}
+							<div class="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg">
+								<div class="flex-shrink-0">
+									<CheckCircle class="w-5 h-5 text-green-500" />
+								</div>
+								<div class="flex-1 min-w-0">
+									<div class="text-sm font-medium text-white truncate">
+										{task.title}
+									</div>
+									{#if task.description}
+										<div class="text-xs text-zinc-400 truncate mt-1">
+											{task.description}
+										</div>
+									{/if}
+									<div class="flex items-center gap-2 mt-2">
+										{#if task.priority !== 'medium'}
+											<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {task.priority === 'high' ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400'}">
+												{task.priority === 'high' ? 'Haute' : 'Basse'}
+											</span>
+										{/if}
+										{#if task.tags.length > 0}
+											<div class="flex gap-1">
+												{#each task.tags.slice(0, 2) as tag}
+													<span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-zinc-700 text-zinc-300">
+														{tag}
+													</span>
+												{/each}
+												{#if task.tags.length > 2}
+													<span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-zinc-700 text-zinc-300">
+														+{task.tags.length - 2}
+													</span>
+												{/if}
+											</div>
+										{/if}
+									</div>
+								</div>
+							</div>
+						{/each}
 					</div>
 				</div>
 			{/if}
