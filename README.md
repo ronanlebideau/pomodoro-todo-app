@@ -1,6 +1,6 @@
-# 🍅 Pomodoro Todo App
+# 🍅 Rorodoro Todo
 
-Application PWA de gestion de tâches avec timer Pomodoro, planning journalier et tracking du temps.
+Application PWA de gestion de tâches avec timer Rorodoro, planning journalier et suivi du temps.
 
 ## Fonctionnalités
 

@@ -15,9 +15,9 @@ export default defineConfig({
 		// SvelteKitPWA({
 		// 	registerType: 'autoUpdate',
 		// 	manifest: {
-		// 		name: 'Pomodoro Todo App',
-		// 		short_name: 'Pomodoro',
-		// 		description: 'Planifiez vos tâches et utilisez la technique Pomodoro',
+		// 		name: 'Rorodoro Todo',
+		// 		short_name: 'Rorodoro',
+		// 		description: 'Planifiez vos tâches et utilisez la technique Rorodoro',
 		// 		theme_color: '#dc2626',
 		// 		background_color: '#000000',
 		// 		display: 'standalone',

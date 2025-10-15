@@ -67,173 +67,175 @@ function createPomodoroStore() {
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let backgroundAudio: HTMLAudioElement | null = null;
 
-	// Gestion de l'audio de fond avec fondu entre les boucles
-	function playBackgroundAudio() {
-		if (!browser) return;
+function playBackgroundAudio() {
+    if (!browser) return;
 
-		try {
-			// Si l'audio est déjà en cours de lecture, ne rien faire
-			if (backgroundAudio && !backgroundAudio.paused) return;
+    try {
+        // Si l'audio est déjà en cours de lecture, ne rien faire
+        if (backgroundAudio && !backgroundAudio.paused) return;
 
-			// Si l'audio existe mais est en pause, le reprendre avec fondu
-			if (backgroundAudio && backgroundAudio.paused) {
-				const targetVolume = backgroundAudio.volume;
-				backgroundAudio.volume = 0; // Commencer le fondu depuis 0
-				
-				backgroundAudio.play().catch(error => {
-					console.warn('🎵 Could not resume background audio:', error);
-				});
+        // Si l'audio existe mais est en pause, le reprendre avec fondu
+        if (backgroundAudio && backgroundAudio.paused) {
+            const targetVolume = 0.3; // Volume cible à 30%
+            backgroundAudio.volume = 0; // Commencer le fondu depuis 0
+            
+            backgroundAudio.play().catch(error => {
+                console.warn('🎵 Could not resume background audio:', error);
+            });
 
-				// Fade-in progressif sur 1 seconde
-				const fadeInSteps = 20;
-				const fadeInInterval = 50; // ms
-				const volumeIncrement = targetVolume / fadeInSteps;
-				let currentStep = 0;
+            // Fade-in progressif sur 1 seconde
+            const fadeInSteps = 20;
+            const fadeInInterval = 50; // ms
+            const volumeIncrement = targetVolume / fadeInSteps;
+            let currentStep = 0;
 
-				const fadeInTimer = setInterval(() => {
-					currentStep++;
-					if (backgroundAudio && currentStep <= fadeInSteps) {
-						backgroundAudio.volume = Math.min(targetVolume, volumeIncrement * currentStep);
-					} else {
-						clearInterval(fadeInTimer);
-					}
-				}, fadeInInterval);
+            const fadeInTimer = setInterval(() => {
+                currentStep++;
+                if (backgroundAudio && currentStep <= fadeInSteps) {
+                    backgroundAudio.volume = Math.min(targetVolume, volumeIncrement * currentStep);
+                } else {
+                    clearInterval(fadeInTimer);
+                }
+            }, fadeInInterval);
 
-				return;
-			}
+            return;
+        }
 
-			// Créer un nouvel élément audio
-			backgroundAudio = new Audio('/sounds/loop-audio-focus.mp3');
-			const targetVolume = 0.3;
-			backgroundAudio.volume = 0; // Commencer à 0 pour le fade-in
+        // Créer un nouvel élément audio
+        backgroundAudio = new Audio('/sounds/loop-audio-focus.mp3');
+        const targetVolume = 0.3; // Volume cible à 30%
+        backgroundAudio.volume = 0; // Commencer à 0 pour le fade-in
+        backgroundAudio.loop = true;
 
-			// Fonction pour gérer le fondu entre les boucles
-			const handleFadeBetweenLoops = () => {
-				if (!backgroundAudio) return;
+        // Fonction pour gérer le fondu entre les boucles
+        const handleFadeBetweenLoops = () => {
+            if (!backgroundAudio) return;
 
-				const audio = backgroundAudio;
-				const duration = audio.duration;
-				const fadeTime = 1.0; // Durée du fondu en secondes
-				
-				// Vérifier si on est proche de la fin (dans les 2 dernières secondes)
-				if (duration - audio.currentTime <= fadeTime) {
-					// Commencer le fondu de sortie
-					const fadeOutStartVolume = audio.volume;
-					const fadeOutSteps = 20;
-					const fadeOutInterval = (fadeTime * 1000) / fadeOutSteps;
-					
-					let currentStep = 0;
-					const fadeOutTimer = setInterval(() => {
-						if (!backgroundAudio || backgroundAudio !== audio) {
-							clearInterval(fadeOutTimer);
-							return;
-						}
-						
-						currentStep++;
-						audio.volume = Math.max(0, fadeOutStartVolume * (1 - (currentStep / fadeOutSteps)));
-						
-						if (currentStep >= fadeOutSteps) {
-							clearInterval(fadeOutTimer);
-						}
-					}, fadeOutInterval);
-				}
-			};
+            const audio = backgroundAudio;
+            const duration = audio.duration;
+            const fadeTime = 1.0; // Durée du fondu en secondes
+            
+            // Vérifier si on est proche de la fin (dans les 2 dernières secondes)
+            if (duration - audio.currentTime <= fadeTime) {
+                // Commencer le fondu de sortie
+                const fadeOutStartVolume = audio.volume;
+                const fadeOutSteps = 20;
+                const fadeOutInterval = (fadeTime * 1000) / fadeOutSteps;
+                
+                let currentStep = 0;
+                const fadeOutTimer = setInterval(() => {
+                    if (!backgroundAudio || backgroundAudio !== audio) {
+                        clearInterval(fadeOutTimer);
+                        return;
+                    }
+                    
+                    currentStep++;
+                    audio.volume = Math.max(0, fadeOutStartVolume * (1 - (currentStep / fadeOutSteps)));
+                    
+                    if (currentStep >= fadeOutSteps) {
+                        clearInterval(fadeOutTimer);
+                    }
+                }, fadeOutInterval);
+            }
+        };
 
-			// Détecter la fin de la boucle
-			backgroundAudio.addEventListener('timeupdate', handleFadeBetweenLoops);
+        // Détecter la fin de la boucle
+        backgroundAudio.addEventListener('timeupdate', handleFadeBetweenLoops);
 
-			// Gérer le début de la nouvelle boucle
-			const handleLoop = () => {
-				if (!backgroundAudio) return;
-				
-				// Fade-in progressif sur 1 seconde
-				const fadeInSteps = 20;
-				const fadeInInterval = 50; // ms
-				const volumeIncrement = targetVolume / fadeInSteps;
-				let currentStep = 0;
+        // Gérer le début de la nouvelle boucle
+        const handleLoop = () => {
+            if (!backgroundAudio) return;
+            
+            // Fade-in progressif sur 1 seconde
+            const fadeInSteps = 20;
+            const fadeInInterval = 50; // ms
+            const volumeIncrement = targetVolume / fadeInSteps;
+            let currentStep = 0;
 
-				const fadeInTimer = setInterval(() => {
-					if (!backgroundAudio) {
-						clearInterval(fadeInTimer);
-						return;
-					}
-					
-					currentStep++;
-					backgroundAudio.volume = Math.min(targetVolume, volumeIncrement * currentStep);
-					
-					if (currentStep >= fadeInSteps) {
-						clearInterval(fadeInTimer);
-					}
-				}, fadeInInterval);
-			};
+            const fadeInTimer = setInterval(() => {
+                if (!backgroundAudio) {
+                    clearInterval(fadeInTimer);
+                    return;
+                }
+                
+                currentStep++;
+                backgroundAudio.volume = Math.min(targetVolume, volumeIncrement * currentStep);
+                
+                if (currentStep >= fadeInSteps) {
+                    clearInterval(fadeInTimer);
+                }
+            }, fadeInInterval);
+        };
 
-			// Écouter l'événement de fin de boucle
-			backgroundAudio.addEventListener('seeked', handleLoop);
+        // Écouter l'événement de fin de boucle
+        backgroundAudio.addEventListener('seeked', handleLoop);
 
-			// Démarrer la lecture avec un fondu d'entrée
-			backgroundAudio.play().then(() => {
-				handleLoop();
-			}).catch(error => {
-				console.warn('🎵 Could not play background audio (autoplay policy):', error);
-			});
+        // Démarrer la lecture avec un fondu d'entrée
+        backgroundAudio.play().then(() => {
+            handleLoop();
+        }).catch(error => {
+            console.warn('🎵 Could not play background audio (autoplay policy):', error);
+        });
 
-			// Nettoyage des écouteurs d'événements
-			const cleanup = () => {
-				if (backgroundAudio) {
-					backgroundAudio.removeEventListener('timeupdate', handleFadeBetweenLoops);
-					backgroundAudio.removeEventListener('seeked', handleLoop);
-					backgroundAudio.removeEventListener('ended', cleanup);
-				}
-			};
+        // Nettoyage des écouteurs d'événements
+        const cleanup = () => {
+            if (backgroundAudio) {
+                backgroundAudio.removeEventListener('timeupdate', handleFadeBetweenLoops);
+                backgroundAudio.removeEventListener('seeked', handleLoop);
+                backgroundAudio.removeEventListener('ended', cleanup);
+            }
+        };
 
-			backgroundAudio.addEventListener('ended', cleanup);
+        backgroundAudio.addEventListener('ended', cleanup);
 
-		} catch (error) {
-			console.warn('🎵 Error creating background audio:', error);
-		}
-	}
+    } catch (error) {
+        console.warn('🎵 Error creating background audio:', error);
+    }
+}
 
-	function pauseBackgroundAudio() {
-		if (backgroundAudio && !backgroundAudio.paused) {
-			backgroundAudio.pause();
-			console.log('🎵 Background audio paused');
-		}
-	}
+function stopBackgroundAudio() {
+    if (backgroundAudio) {
+        console.log('🎵 Starting fade-out...');
 
-	function resumeBackgroundAudio() {
-		if (backgroundAudio && backgroundAudio.paused) {
-			backgroundAudio.play().catch(error => {
-				console.warn('🎵 Could not resume background audio:', error);
-			});
-			console.log('🎵 Background audio resumed');
-		}
-	}
+        // Fade-out progressif sur 1 seconde (20 étapes de 50ms)
+        const fadeOutSteps = 20;
+        const fadeOutInterval = 50; // ms
+        const currentVolume = backgroundAudio.volume;
+        const volumeDecrement = currentVolume / fadeOutSteps;
+        let currentStep = 0;
 
-	function stopBackgroundAudio() {
-		if (backgroundAudio) {
-			console.log('🎵 Starting fade-out...');
+        const fadeOutTimer = setInterval(() => {
+            currentStep++;
+            if (backgroundAudio && currentStep <= fadeOutSteps) {
+                backgroundAudio.volume = Math.max(0, currentVolume - (volumeDecrement * currentStep));
+            } else {
+                clearInterval(fadeOutTimer);
+                // Arrêter complètement l'audio après le fade-out
+                backgroundAudio?.pause();
+                backgroundAudio = null;
+                console.log('🎵 Fade-out completed, audio stopped');
+            }
+        }, fadeOutInterval);
+    }
+}
 
-			// Fade-out progressif sur 1 seconde (20 étapes de 50ms)
-			const fadeOutSteps = 20;
-			const fadeOutInterval = 50; // ms
-			const currentVolume = backgroundAudio.volume;
-			const volumeDecrement = currentVolume / fadeOutSteps;
-			let currentStep = 0;
+function pauseBackgroundAudio() {
+    if (backgroundAudio && !backgroundAudio.paused) {
+        console.log('🎵 Pausing background audio');
+        backgroundAudio.pause();
+    }
+}
 
-			const fadeOutTimer = setInterval(() => {
-				currentStep++;
-				if (backgroundAudio && currentStep <= fadeOutSteps) {
-					backgroundAudio.volume = Math.max(0, currentVolume - (volumeDecrement * currentStep));
-				} else {
-					clearInterval(fadeOutTimer);
-					// Arrêter complètement l'audio après le fade-out
-					backgroundAudio?.pause();
-					backgroundAudio = null;
-					console.log('🎵 Fade-out completed, audio stopped');
-				}
-			}, fadeOutInterval);
-		}
-	}
+function resumeBackgroundAudio() {
+    if (backgroundAudio && backgroundAudio.paused) {
+        backgroundAudio.play().catch(error => {
+            console.warn('🎵 Could not resume background audio:', error);
+        });
+        console.log('🎵 Background audio resumed');
+    }
+}
+
+	// [Le reste des fonctions existantes...]
 
 	return {
 		subscribe,
@@ -267,7 +269,7 @@ function createPomodoroStore() {
 				console.error('Erreur création session DB:', error);
 			}
 
-			playBackgroundAudio(); // Démarrer l'audio de fond
+			playBackgroundAudio();
 			startTick();
 		},
 
@@ -304,32 +306,83 @@ function createPomodoroStore() {
 		},
 
 		pause: () => {
-			update(state => ({
-				...state,
-				state: 'paused' as PomodoroState,
-				startTime: undefined
-			}));
-			stopTick();
-		},
-
-		resume: () => {
-			const now = Date.now();
 			update(state => {
-				if (state.state === 'paused') {
+				if (state.state === 'focus' || state.state === 'short-break' || state.state === 'long-break') {
+					// Calculer le temps restant avant la pause
+					const now = Date.now();
+					const elapsed = Math.floor((now - (state.startTime || now)) / 1000);
+					const remaining = Math.max(0, state.totalSeconds - elapsed);
+					
 					return {
 						...state,
-						state: state.remainingSeconds > 0 ? 'focus' as PomodoroState : 'idle' as PomodoroState,
-						startTime: now
+						state: 'paused' as PomodoroState,
+						remainingSeconds: remaining,
+						totalSeconds: state.totalSeconds, // Conserver le temps total
+						startTime: undefined
 					};
 				}
 				return state;
 			});
-			startTick();
+			stopTick();
+			pauseBackgroundAudio();
+		},
+
+		resume: () => {
+			const now = Date.now();
+			let shouldStartTick = false;
+			let newState: PomodoroState = 'idle';
+
+			update(state => {
+				if (state.state === 'paused') {
+					shouldStartTick = state.remainingSeconds > 0;
+					
+					// Déterminer le nouvel état en fonction du temps restant
+					if (state.remainingSeconds > 0) {
+						if (state.remainingSeconds === state.totalSeconds) {
+							newState = 'focus';
+						} else if (state.remainingSeconds <= state.config.shortBreakDuration * 60) {
+							newState = 'short-break';
+						} else if (state.remainingSeconds <= state.config.longBreakDuration * 60) {
+							newState = 'long-break';
+						} else {
+							newState = 'focus';
+						}
+					}
+					
+					// Calculer le nouveau startTime pour reprendre au bon moment
+					const elapsedSeconds = state.totalSeconds - state.remainingSeconds;
+					const newStartTime = now - (elapsedSeconds * 1000);
+					
+					console.log('Resuming timer:', {
+						remaining: state.remainingSeconds,
+						total: state.totalSeconds,
+						elapsed: elapsedSeconds,
+						newState,
+						newStartTime: new Date(newStartTime).toISOString()
+					});
+					
+					return {
+						...state,
+						state: newState,
+						startTime: newStartTime
+					};
+				}
+				return state;
+			});
+
+			// Démarrer le timer après la mise à jour de l'état
+			setTimeout(() => {
+				if (shouldStartTick) {
+					console.log('Starting tick from resume');
+					startTick();
+				}
+				resumeBackgroundAudio();
+			}, 0);
 		},
 
 		stop: async () => {
 			stopTick();
-			stopBackgroundAudio(); // Arrêter l'audio de fond
+			stopBackgroundAudio();
 
 			try {
 				let currentState: PomodoroStoreState;
@@ -377,30 +430,25 @@ function createPomodoroStore() {
 			}
 
 			stopTick();
-			stopBackgroundAudio(); // Arrêter l'audio de fond
+			stopBackgroundAudio();
 			set({ ...initialState, completedSessions: currentState!.completedSessions });
-		},
-
-		pause: () => {
-			update(state => ({
-				...state,
-				state: 'paused' as PomodoroState
-			}));
-			pauseBackgroundAudio(); // Mettre l'audio en pause
-		},
-
-		resume: () => {
-			update(state => ({
-				...state,
-				state: state.startTime ? (state.totalSeconds === state.config.focusDuration * 60 ? 'focus' : 'short-break') as PomodoroState : 'idle' as PomodoroState
-			}));
-			resumeBackgroundAudio(); // Reprendre l'audio
 		},
 
 		reset: () => {
 			stopTick();
-			stopBackgroundAudio(); // Arrêter l'audio de fond
+			stopBackgroundAudio();
 			set(initialState);
+		},
+
+		// Nouvelle méthode pour mettre à jour la configuration
+		updateConfig: (newConfig: Partial<PomodoroConfig>) => {
+			update(state => ({
+				...state,
+				config: {
+					...state.config,
+					...newConfig
+				}
+			}));
 		}
 	};
 
