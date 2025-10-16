@@ -1,53 +1,55 @@
 # 🍅 Rorodoro Todo
 
-Application PWA de gestion de tâches avec timer Rorodoro, planning journalier et suivi du temps.
+> [Lire en français](README.fr.md)
 
-## Fonctionnalités
+A PWA task management application with Rorodoro timer, daily planning, and time tracking.
 
-- ✅ **Gestion de tâches** : CRUD complet avec priorités, tags, dates et heures
-- 🍅 **Timer Pomodoro** : 25 min focus / 5 min pause / 15 min pause longue (après 4 sessions)
-- ⏱️ **Time tracking** : Automatique pendant Pomodoro ou manuel
-- 📅 **Planning journalier** : Vue timeline avec slots de 30 minutes
-- 📊 **Statistiques** : Temps total, tâches complétées, export CSV
-- 📱 **PWA** : Installable sur mobile/desktop, fonctionne offline
-- 🔔 **Notifications** : Alertes de fin de session Pomodoro
-- 🌙 **Thème sombre** par défaut
+## Features
+
+- ✅ **Task Management**: Full CRUD with priorities, tags, dates, and times
+- 🍅 **Pomodoro Timer**: 25 min focus / 5 min break / 15 min long break (after 4 sessions)
+- ⏱️ **Time Tracking**: Automatic during Pomodoro or manual tracking
+- 📅 **Daily Planning**: Timeline view with 30-minute slots
+- 📊 **Statistics**: Total time, completed tasks, CSV export
+- 📱 **PWA**: Installable on mobile/desktop, works offline
+- 🔔 **Notifications**: Alerts for Pomodoro session completion
+- 🌙 **Dark theme** by default
 
 ## Installation
 
 ```bash
-# Installer les dépendances
+# Install dependencies
 npm install
 
-# Lancer le serveur de développement
+# Start development server
 npm run dev
 
-# Ouvrir dans le navigateur
+# Open in browser
 npm run dev -- --open
 ```
 
-## Utilisation
+## Usage
 
-1. **Créer des tâches** : Cliquez sur "Nouvelle tâche" pour ajouter une tâche
-2. **Planifier** : Ajoutez une date et des heures de début/fin pour voir la tâche dans le planning
-3. **Démarrer Pomodoro** : Cliquez sur l'icône horloge d'une tâche pour la lier au timer
-4. **Tracker le temps** : Utilisez le bouton Play pour démarrer le tracking manuel
-5. **Voir les stats** : Onglet Statistiques pour voir vos performances
+1. **Create Tasks**: Click on "New Task" to add a task
+2. **Schedule**: Add a date and start/end times to see the task in the planning
+3. **Start Pomodoro**: Click the clock icon on a task to link it to the timer
+4. **Track Time**: Use the Play button to start manual tracking
+5. **View Stats**: Check the Statistics tab to see your performance
 
 ## Technologies
 
 - **SvelteKit** + TypeScript
-- **TailwindCSS** pour le style
-- **Dexie** (IndexedDB) pour le stockage local
-- **Lucide** pour les icônes
-- **Vite PWA** pour les fonctionnalités PWA
+- **TailwindCSS** for styling
+- **Dexie** (IndexedDB) for local storage
+- **Lucide** for icons
+- **Vite PWA** for PWA features
 
 ## Export/Import
 
-- **Export CSV** : Disponible dans l'onglet Statistiques
-- Les données sont stockées localement dans IndexedDB (persistent dans le navigateur)
+- **CSV Export**: Available in the Statistics tab
+- Data is stored locally in IndexedDB (persists in the browser)
 
-## Build Production
+## Production Build
 
 ```bash
 npm run build
