@@ -25,11 +25,39 @@ function createDailyGoalsStore() {
 			const today = new Date().toISOString().split('T')[0];
 
 			try {
-				const goals = await db.getDailyGoalByDate(today);
-				update(state => ({ ...state, currentGoals: goals || null, loading: false }));
+				// Charger les objectifs pour aujourd'hui
+				let goals = await db.getDailyGoalByDate(today);
+				
+				// Si pas d'objectifs pour aujourd'hui, créer des objectifs vides
+				if (!goals) {
+					const defaultGoals = {
+						date: today,
+						goal1: '',
+						goal2: '',
+						goal3: '',
+						completed1: false,
+						completed2: false,
+						completed3: false,
+						createdAt: Date.now(),
+						updatedAt: Date.now()
+					};
+					
+					const id = await db.addDailyGoal(defaultGoals);
+					goals = { ...defaultGoals, id: id as number };
+				}
+				
+				update(state => ({
+					...state,
+					currentGoals: goals || null,
+					loading: false
+				}));
 			} catch (error) {
 				console.error('Error loading today\'s goals:', error);
-				update(state => ({ ...state, loading: false }));
+				update(state => ({
+					...state,
+					loading: false,
+					error: 'Failed to load daily goals'
+				}));
 			}
 		},
 

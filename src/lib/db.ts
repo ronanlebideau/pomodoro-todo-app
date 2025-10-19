@@ -37,17 +37,37 @@ export interface PomodoroSession {
 	interrupted: boolean;
 }
 
-export interface DailyGoal {
-	id?: number;
-	date: string; // YYYY-MM-DD format
-	goal1: string;
-	goal2: string;
-	goal3: string;
-	completed1: boolean;
-	completed2: boolean;
-	completed3: boolean;
-	createdAt: number;
-	updatedAt: number;
+export interface Goal {
+  id?: number;
+  date: string; // Date de création
+  period: 'day' | 'week' | 'month' | 'year';
+  goal1: string;
+  goal2: string;
+  goal3: string;
+  completed1: boolean;
+  completed2: boolean;
+  completed3: boolean;
+  createdAt: number;
+  updatedAt: number;
+  // Pour les objectifs hebdomadaires, mensuels, annuels
+  startDate?: string; // Date de début de la période
+  endDate?: string;   // Date de fin de la période
+}
+
+export interface DailyGoal extends Omit<Goal, 'period'> {
+	period: 'day';
+}
+
+export interface WeeklyGoal extends Omit<Goal, 'period'> {
+	period: 'week';
+}
+
+export interface MonthlyGoal extends Omit<Goal, 'period'> {
+	period: 'month';
+}
+
+export interface YearlyGoal extends Omit<Goal, 'period'> {
+	period: 'year';
 }
 
 // Version temporaire utilisant localStorage pour contourner les problèmes de sécurité macOS 26.0.1
@@ -65,12 +85,120 @@ export class PomodoroDatabase {
 		}
 	}
 
-	private getStorageKey(type: string): string {
-		return `${this.dbName}_${type}`;
+	private getStorageKey(type: string, period?: string): string {
+		return period ? `${this.dbName}_${type}_${period}` : `${this.dbName}_${type}`;
 	}
 
 	private generateId(): number {
 		return Date.now() + Math.floor(Math.random() * 1000);
+	}
+
+	async getGoalByDate(period: 'day' | 'week' | 'month' | 'year', date: string): Promise<Goal | null> {
+		if (!browser) return null;
+		try {
+			const key = this.getStorageKey('goals', period);
+			const goals = JSON.parse(this.storage!.getItem(key) || '[]') as Goal[];
+			return goals.find(goal => goal.date === date) || null;
+		} catch (error) {
+			console.error('Error getting goal by date:', error);
+			return null;
+		}
+	}
+
+	async addGoal(goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>): Promise<number> {
+		if (!browser) throw new Error('Storage not available');
+
+		try {
+			const key = this.getStorageKey('goals', goal.period);
+			const goals = JSON.parse(this.storage!.getItem(key) || '[]') as Goal[];
+			const now = Date.now();
+			const newGoal: Goal = {
+				...goal,
+				id: this.generateId(),
+				createdAt: now,
+				updatedAt: now
+			};
+
+			goals.push(newGoal);
+			this.storage!.setItem(key, JSON.stringify(goals));
+			return newGoal.id!;
+		} catch (error) {
+			console.error('Error adding goal:', error);
+			throw error;
+		}
+	}
+
+	async updateGoal(
+		id: number, 
+		period: 'day' | 'week' | 'month' | 'year',
+		updates: Partial<Omit<Goal, 'id' | 'createdAt' | 'period'>>
+	): Promise<void> {
+		console.log('updateGoal called', { id, period, updates });
+		if (!browser) throw new Error('Storage not available');
+
+		try {
+			const key = this.getStorageKey('goals', period);
+			console.log('Storage key:', key);
+			
+			const goalsStr = this.storage!.getItem(key) || '[]';
+			console.log('Raw goals from storage:', goalsStr);
+			
+			const goals = JSON.parse(goalsStr) as Goal[];
+			console.log('Parsed goals:', goals);
+			
+			const index = goals.findIndex(g => g.id === id);
+			console.log('Found goal at index:', index);
+
+			if (index !== -1) {
+				// Créer une copie des mises à jour pour éviter de modifier l'objet d'origine
+				const safeUpdates = { ...updates };
+				
+				// S'assurer que les champs de complétion sont des booléens
+				if ('completed1' in safeUpdates) {
+					safeUpdates.completed1 = Boolean(safeUpdates.completed1);
+				}
+				if ('completed2' in safeUpdates) {
+					safeUpdates.completed2 = Boolean(safeUpdates.completed2);
+				}
+				if ('completed3' in safeUpdates) {
+					safeUpdates.completed3 = Boolean(safeUpdates.completed3);
+				}
+
+				const updatedGoal: Goal = { 
+					...goals[index],
+					...safeUpdates,
+					updatedAt: Date.now() 
+				};
+
+				console.log('Updated goal:', updatedGoal);
+				
+				// Mettre à jour le tableau des objectifs
+				const updatedGoals = [...goals];
+				updatedGoals[index] = updatedGoal;
+				
+				const newGoalsStr = JSON.stringify(updatedGoals);
+				console.log('Saving to storage:', newGoalsStr);
+				
+				this.storage!.setItem(key, newGoalsStr);
+				console.log('Successfully saved to storage');
+			} else {
+				console.warn('Goal not found with id:', id);
+			}
+		} catch (error) {
+			console.error('Error updating goal:', error);
+			throw error;
+		}
+	}
+
+	async getGoals(period: 'day' | 'week' | 'month' | 'year'): Promise<Goal[]> {
+		if (!browser) return [];
+		try {
+			const key = this.getStorageKey('goals', period);
+			return JSON.parse(this.storage!.getItem(key) || '[]') as Goal[];
+		} catch (error) {
+			console.error('Error getting goals:', error);
+			return [];
+		}
 	}
 
 	// Méthodes pour les Tasks
@@ -219,7 +347,10 @@ export class PomodoroDatabase {
 		if (!browser) return [];
 		try {
 			const data = this.storage!.getItem(this.getStorageKey('dailyGoals'));
-			return data ? JSON.parse(data) : [];
+			if (!data) return [];
+			// S'assurer que les données sont bien un tableau
+			const parsed = JSON.parse(data);
+			return Array.isArray(parsed) ? parsed : [];
 		} catch (error) {
 			console.error('Error getting daily goals:', error);
 			return [];
@@ -238,7 +369,17 @@ export class PomodoroDatabase {
 			updatedAt: now
 		};
 
-		goals.push(newGoal);
+		// Vérifier si un objectif existe déjà pour cette date
+		const existingIndex = goals.findIndex(g => g.date === goal.date);
+		
+		if (existingIndex >= 0) {
+			// Mettre à jour l'objectif existant
+			goals[existingIndex] = { ...goals[existingIndex], ...newGoal };
+		} else {
+			// Ajouter un nouvel objectif
+			goals.push(newGoal);
+		}
+
 		this.storage!.setItem(this.getStorageKey('dailyGoals'), JSON.stringify(goals));
 		return newGoal.id!;
 	}
@@ -250,14 +391,24 @@ export class PomodoroDatabase {
 		const index = goals.findIndex(g => g.id === id);
 
 		if (index !== -1) {
-			goals[index] = { ...goals[index], ...updates, updatedAt: Date.now() };
+			const updatedGoal = { 
+				...goals[index], 
+				...updates, 
+				updatedAt: Date.now() 
+			};
+			goals[index] = updatedGoal;
 			this.storage!.setItem(this.getStorageKey('dailyGoals'), JSON.stringify(goals));
 		}
 	}
 
 	async getDailyGoalByDate(date: string): Promise<DailyGoal | undefined> {
 		const goals = await this.getDailyGoals();
-		return goals.find(g => g.date === date);
+		// Normaliser la date pour la comparaison (au cas où le format varie)
+		const normalizedDate = new Date(date).toISOString().split('T')[0];
+		return goals.find(g => {
+			const goalDate = new Date(g.date).toISOString().split('T')[0];
+			return goalDate === normalizedDate;
+		});
 	}
 
 	// Méthode d'initialisation
@@ -271,10 +422,20 @@ export class PomodoroDatabase {
 
 // Classe Dexie originale gardée pour référence future
 export class DexiePomodoroDatabase extends Dexie {
-	tasks!: Table<Task>;
-	pomodoroSessions!: Table<PomodoroSession>;
-	timeLogs!: Table<TimeLog>;
-	dailyGoals!: Table<DailyGoal>;
+  tasks!: Table<Task>;
+  pomodoroSessions!: Table<PomodoroSession>;
+  timeLogs!: Table<TimeLog>;
+  dailyGoals!: Table<DailyGoal>;
+  
+  private storage = localStorage;
+  
+  private generateId(): number {
+    return Math.floor(Math.random() * 1000000);
+  }
+  
+  private getStorageKey(key: string): string {
+    return `pomodoro-todo-${key}`;
+  }
 
 	constructor() {
 		super('PomodoroTodoApp');
@@ -285,6 +446,102 @@ export class DexiePomodoroDatabase extends Dexie {
 			dailyGoals: '++id, date, createdAt'
 		});
 	}
+	// Ajoutez ces méthodes à votre classe PomodoroDatabase
+
+async getGoalByDate(period: 'day' | 'week' | 'month' | 'year', date: string): Promise<Goal | null> {
+  if (!browser) return null;
+  
+  try {
+    const goals = await this.getGoals(period);
+    const targetDate = new Date(date);
+    
+    return goals.find(goal => {
+      if (period === 'day') {
+        return goal.date === targetDate.toISOString().split('T')[0];
+      } else if (goal.startDate && goal.endDate) {
+        const start = new Date(goal.startDate);
+        const end = new Date(goal.endDate);
+        return targetDate >= start && targetDate <= end;
+      }
+      return false;
+    }) || null;
+  } catch (error) {
+    console.error(`Error getting ${period} goal:`, error);
+    return null;
+  }
+}
+
+async addGoal(goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>): Promise<number> {
+  if (!browser) throw new Error('Storage not available');
+
+  const goals = await this.getGoals(goal.period);
+  const now = Date.now();
+  const newGoal: Goal = {
+    ...goal,
+    id: this.generateId(),
+    createdAt: now,
+    updatedAt: now
+  };
+
+  // Vérifier si un objectif existe déjà pour cette période
+  const existingIndex = goals.findIndex(g => {
+    if (goal.period === 'day') {
+      return g.date === goal.date;
+    }
+    return g.startDate === goal.startDate && g.endDate === goal.endDate;
+  });
+  
+  if (existingIndex >= 0) {
+    // Mettre à jour l'objectif existant
+    goals[existingIndex] = { ...goals[existingIndex], ...newGoal };
+  } else {
+    // Ajouter un nouvel objectif
+    goals.push(newGoal);
+  }
+
+  this.storage!.setItem(
+    this.getStorageKey(`goals_${goal.period}`), 
+    JSON.stringify(goals)
+  );
+  return newGoal.id!;
+}
+
+async updateGoal(
+  id: number, 
+  period: 'day' | 'week' | 'month' | 'year', 
+  updates: Partial<Omit<Goal, 'id' | 'createdAt' | 'period'>>
+): Promise<void> {
+  if (!browser) throw new Error('Storage not available');
+
+  const goals = await this.getGoals(period);
+  const index = goals.findIndex(g => g.id === id);
+
+  if (index !== -1) {
+    const updatedGoal = { 
+      ...goals[index], 
+      ...updates, 
+      updatedAt: Date.now() 
+    };
+    goals[index] = updatedGoal;
+    this.storage!.setItem(
+      this.getStorageKey(`goals_${period}`), 
+      JSON.stringify(goals)
+    );
+  }
+}
+
+private async getGoals(period: 'day' | 'week' | 'month' | 'year'): Promise<Goal[]> {
+  if (!browser) return [];
+  try {
+    const data = this.storage!.getItem(this.getStorageKey(`goals_${period}`));
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error(`Error getting ${period} goals:`, error);
+    return [];
+  }
+}
 }
 
 // Utiliser la version temporaire avec localStorage

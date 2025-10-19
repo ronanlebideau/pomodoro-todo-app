@@ -5,9 +5,9 @@
 	import TaskForm from '$lib/components/TaskForm.svelte';
 	import TaskList from '$lib/components/TaskList.svelte';
 	import StatsPanel from '$lib/components/StatsPanel.svelte';
-	import { dailyGoalsStore } from '$lib/stores/dailyGoalsStore';
+	import { goalsStore } from '$lib/stores/goalsStore';
 	import DailyGoalsDisplay from '$lib/components/DailyGoalsDisplay.svelte';
-	import DailyGoalsModal from '$lib/components/DailyGoalsModal.svelte';
+	import GoalsModal from '$lib/components/GoalsModal.svelte';
 	import DayTimeline from '$lib/components/DayTimeline.svelte';
 	import { Calendar, BarChart3, CheckSquare } from 'lucide-svelte';
 	import type { Task } from '$lib/db';
@@ -34,7 +34,10 @@
 
 	// Load stores only on client side to avoid SSR issues
 	onMount(async () => {
-		await taskStore.loadTasks();
+		await Promise.all([
+			taskStore.loadTasks(),
+			goalsStore.loadGoals()
+		]);
 	});
 
 	function handleCreateTask(date?: string, time?: string) {
@@ -75,6 +78,7 @@
 
 <div class="min-h-screen bg-black text-white">
 	<div class="flex flex-col min-h-screen">
+		<!-- ON MASQUE LE HEADER
 		<header class="bg-zinc-900 border-b border-zinc-800">
 			<div class="container mx-auto px-4 py-4">
 				<div class="flex items-center justify-between">
@@ -85,6 +89,7 @@
 				</div>
 			</div>
 		</header>
+		-->
 
 		<main class="container mx-auto px-4 py-8 flex-1">
 			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -158,9 +163,6 @@
 {/if}
 
 <!-- Daily Goals Modal -->
-{#if $dailyGoalsStore.showModal}
-	<ClientOnly><DailyGoalsModal on:close={() => {
-		dailyGoalsStore.setLastVisitDate();
-		dailyGoalsStore.hideGoalsModal();
-	}} /></ClientOnly>
-{/if}
+<ClientOnly>
+  <GoalsModal />
+</ClientOnly>

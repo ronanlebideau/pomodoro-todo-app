@@ -5,7 +5,7 @@
 	export let selectedDate: string;
 	export let handleCreateTask: (date?: string, time?: string) => void;
 
-	let viewMode: 'day' | 'week' = 'day';
+	let viewMode: 'day' | 'week' = 'week';
 
 	$: currentDate = new Date(selectedDate);
 
