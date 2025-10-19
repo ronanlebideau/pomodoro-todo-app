@@ -68,7 +68,7 @@
 		$pomodoroStore.completedSessions % $pomodoroStore.config.sessionsBeforeLongBreak === 0;
 </script>
 
-<div class="flex flex-col items-center gap-6 p-8 bg-zinc-900 rounded-2xl border border-zinc-800 w-full max-w-md">
+<div class="flex flex-col items-center justify-center gap-6 p-8 bg-zinc-900 rounded-2xl border border-zinc-800 w-full h-full">
 	<!-- Timer Display -->
 	<div class="relative w-64 h-64">
 		<!-- Progress Circle -->
@@ -119,9 +119,9 @@
 	</div>
 
 	<!-- Task Selection Dropdown -->
-	<div class="relative w-full max-w-xs">
+	<div class="relative w-full max-w-md">
 		<button
-			class="flex items-center justify-between w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white hover:bg-zinc-700 transition-colors"
+			class="flex items-center justify-between w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-3xl text-white hover:bg-zinc-700 transition-colors"
 			on:click={handleTaskDropdownToggle}
 			disabled={isRunning}
 			class:opacity-50={isRunning}
@@ -192,31 +192,31 @@
 				</button>
 			</div>
 		{:else}
-			<!-- Bouton Focus (pleine largeur) -->
+			<!-- Bouton Focus -->
 			<button
 				on:click={handleStart}
-				class="w-full py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+				class="w-full max-w-md py-3 px-6 bg-blue-600 hover:bg-blue-900 text-white font-medium rounded-3xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
 			>
 				<Brain class="w-5 h-5" />
 				<span>Démarrer un Focus</span>
 			</button>
 
 			<!-- Boutons Pause (côte à côte) -->
-			<div class="flex gap-4 w-full">
+			<div class="flex gap-4 w-full items-center justify-center">
 				<button
 					on:click={() => handleStartBreak(false)}
-					class="flex-1 py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+					class="py-2 px-4 bg-zinc-800 border border-zinc-700 hover:bg-zinc-900 text-white text-xs rounded-3xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
 				>
-					<Coffee class="w-5 h-5" />
-					<span>Pause Courte</span>
+					<Coffee class="w-4 h-4" />
+					<span>Pause Courte (5min)</span>
 				</button>
 
 				<button
 					on:click={() => handleStartBreak(true)}
-					class="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+					class="py-2 px-4 bg-zinc-800 border border-zinc-700 hover:bg-zinc-900 text-white text-xs rounded-3xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
 				>
-					<Coffee class="w-5 h-5" />
-					<span>Pause Longue</span>
+					<Coffee class="w-4 h-4" />
+					<span>Pause Longue (15min)</span>
 				</button>
 			</div>
 		{/if}

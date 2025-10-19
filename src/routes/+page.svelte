@@ -77,79 +77,68 @@
 </svelte:head>
 
 <div class="min-h-screen bg-black text-white">
-	<div class="flex flex-col min-h-screen">
-		<!-- ON MASQUE LE HEADER
-		<header class="bg-zinc-900 border-b border-zinc-800">
-			<div class="container mx-auto px-4 py-4">
-				<div class="flex items-center justify-between">
-					<div>
-						<h1 class="text-2xl font-bold text-white">🍅 Rorodoro Todo</h1>
-						<p class="text-sm text-zinc-400">Planifiez, focalisez, accomplissez</p>
-					</div>
-				</div>
-			</div>
-		</header>
-		-->
-
-		<main class="container mx-auto px-4 py-8 flex-1">
-			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+	<div class="flex flex-col h-screen">
+		<main class="p-8 flex-1">
+			<div class="h-full grid grid-cols-2 lg:grid-cols-2 gap-8">
 				<!-- Left Column: Rorodoro Timer -->
-				<div class="lg:col-span-1">
+				<div class="lg:col-span-1 h-full">
 					<ClientOnly><PomodoroTimer /></ClientOnly>
 				</div>
 
 				<!-- Right Column: Tasks/Timeline/Stats -->
-				<div class="lg:col-span-2 space-y-6">
+				<div class="h-full lg:col-span-1 space-y-6">
 					<!-- Daily Goals Display -->
 					<DailyGoalsDisplay />
 
 					<!-- Tabs -->
-					<div class="flex gap-2 border-b border-zinc-800">
-						<button
-							on:click={() => activeTab = 'tasks'}
-							class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'tasks' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
-						>
-							<CheckSquare class="w-4 h-4" />
-							Tâches
-						</button>
-						<button
-							on:click={() => activeTab = 'planning'}
-							class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'planning' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
-						>
-							<Calendar class="w-4 h-4" />
-							Planning
-						</button>
-						<button
-							on:click={() => activeTab = 'stats'}
-							class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'stats' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
-						>
-							<BarChart3 class="w-4 h-4" />
-							Statistiques
-						</button>
-					</div>
+					 <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-4 mb-4">
+						<div class="flex gap-2 border-b border-zinc-800">
+							<button
+								on:click={() => activeTab = 'tasks'}
+								class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'tasks' ? 'border-blue-600 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
+							>
+								<CheckSquare class="w-4 h-4" />
+								Tâches
+							</button>
+							<button
+								on:click={() => activeTab = 'planning'}
+								class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'planning' ? 'border-blue-600 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
+							>
+								<Calendar class="w-4 h-4" />
+								Planning
+							</button>
+							<button
+								on:click={() => activeTab = 'stats'}
+								class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'stats' ? 'border-blue-600 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
+							>
+								<BarChart3 class="w-4 h-4" />
+								Statistiques
+							</button>
+						</div>
 
 					<!-- Tab Content -->
-					<div class="mt-4">
-						{#if activeTab === 'tasks'}
-							<ClientOnly><TaskList onEditTask={handleEditTask} /></ClientOnly>
-						{:else if activeTab === 'planning'}
-							<div class="space-y-4">
-								<div class="flex items-center gap-4">
-									<label for="date-picker" class="text-sm font-medium text-zinc-300">
-										Sélectionner une date :
-									</label>
-									<input
-										id="date-picker"
-										type="date"
-										bind:value={selectedDate}
-										class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-									/>
+						<div class="mt-4">
+							{#if activeTab === 'tasks'}
+								<ClientOnly><TaskList onEditTask={handleEditTask} /></ClientOnly>
+							{:else if activeTab === 'planning'}
+								<div class="space-y-4">
+									<div class="flex items-center gap-4">
+										<label for="date-picker" class="text-sm font-medium text-zinc-300">
+											Sélectionner une date :
+										</label>
+										<input
+											id="date-picker"
+											type="date"
+											bind:value={selectedDate}
+											class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+										/>
+									</div>
+									<DayTimeline {selectedDate} {handleCreateTask} on:dateChange={() => {}} />
 								</div>
-								<DayTimeline {selectedDate} {handleCreateTask} on:dateChange={() => {}} />
-							</div>
-						{:else if activeTab === 'stats'}
-							<StatsPanel {selectedDate} />
-						{/if}
+							{:else if activeTab === 'stats'}
+								<StatsPanel {selectedDate} />
+							{/if}
+						</div>
 					</div>
 				</div>
 			</div>

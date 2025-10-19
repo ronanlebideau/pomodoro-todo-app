@@ -70,7 +70,7 @@
   {:else if currentGoals}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
       {#each [1, 2, 3] as goalNumber (goalNumber)}
-        <div class="bg-neutral-900/50 border border-neutral-700 rounded-lg p-4 h-40">
+        <div class="bg-zinc-900 border-2 border-dashed border-zinc-700 rounded-xl p-4 hover:border-zinc-600 hover:bg-zinc-800/50 transition-all duration-200 cursor-pointer group">
           <div class="flex flex-col items-center justify-center h-full w-full gap-3">
             <!-- Case à cocher centrée en haut -->
             <button
