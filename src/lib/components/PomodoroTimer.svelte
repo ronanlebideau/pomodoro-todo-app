@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { pomodoroStore, formattedTime, pomodoroProgress } from '$lib/stores/pomodoroStore';
 	import { taskStore } from '$lib/stores/taskStore';
-	import { Play, Pause, Square, Coffee, Brain } from 'lucide-svelte';
+	import { Play, Pause, Square, Coffee, Brain, Volume2, VolumeX, Volume, Volume1 } from 'lucide-svelte';
 
 	export let taskId: number | null = null;
 
@@ -68,7 +68,7 @@
 		$pomodoroStore.completedSessions % $pomodoroStore.config.sessionsBeforeLongBreak === 0;
 </script>
 
-<div class="flex flex-col items-center justify-center gap-6 p-8 bg-zinc-900 rounded-2xl border border-zinc-800 w-full h-full">
+<div class="flex flex-col items-center justify-center gap-6 p-4">
 	<!-- Timer Display -->
 	<div class="relative w-64 h-64">
 		<!-- Progress Circle -->
@@ -163,8 +163,26 @@
 
 	<!-- Controls -->
 	<div class="flex flex-col items-center gap-4 w-full">
+		<!-- Bouton Son - Toujours visible -->
+		<div class="flex gap-4 mb-4">
+			<button
+				on:click|stopPropagation={() => pomodoroStore.toggleSound()}
+				class="w-60 py-2 px-4 bg-zinc-800 border border-zinc-700 hover:bg-zinc-900 text-white text-xs rounded-3xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+				title="{$pomodoroStore.soundEnabled ? 'Désactiver' : 'Activer'} le son d'ambiance"
+			>
+				{#if $pomodoroStore.soundEnabled}
+					Son ambiant activé
+					<Volume2 class="w-4 h-4" />
+				{:else}
+					Son ambiant désactivé
+					<VolumeX class="w-4 h-4" />
+				{/if}
+			</button>
+		</div>
+
 		{#if isRunning || isPaused}
 			<div class="flex gap-4">
+				<!-- Bouton Play/Pause -->
 				{#if isPaused}
 					<button
 						on:click={handleResume}
@@ -183,6 +201,7 @@
 					</button>
 				{/if}
 
+				<!-- Bouton Stop -->
 				<button
 					on:click={handleStop}
 					class="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-700 text-white hover:bg-zinc-600 transition-colors"
@@ -203,6 +222,7 @@
 
 			<!-- Boutons Pause (côte à côte) -->
 			<div class="flex gap-4 w-full items-center justify-center">
+				<!-- BOUTON PAUSE COURTE -->
 				<button
 					on:click={() => handleStartBreak(false)}
 					class="py-2 px-4 bg-zinc-800 border border-zinc-700 hover:bg-zinc-900 text-white text-xs rounded-3xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
@@ -211,6 +231,7 @@
 					<span>Pause Courte (5min)</span>
 				</button>
 
+				<!-- BOUTON PAUSE LONGUE -->
 				<button
 					on:click={() => handleStartBreak(true)}
 					class="py-2 px-4 bg-zinc-800 border border-zinc-700 hover:bg-zinc-900 text-white text-xs rounded-3xl transition-colors flex items-center justify-center gap-2 cursor-pointer"

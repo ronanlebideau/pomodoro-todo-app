@@ -48,7 +48,7 @@
   }
 </script>
 
-<div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-4 mb-4">
+
   <div class="flex items-center justify-between mb-3">
     <div class="flex items-center gap-2">
       <Target class="w-5 h-5 text-blue-400" />
@@ -68,9 +68,9 @@
   {#if loading}
     <div class="text-center py-4 text-gray-400">Chargement...</div>
   {:else if currentGoals}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
       {#each [1, 2, 3] as goalNumber (goalNumber)}
-        <div class="bg-zinc-900 border-2 border-dashed border-zinc-700 rounded-xl p-4 hover:border-zinc-600 hover:bg-zinc-800/50 transition-all duration-200 cursor-pointer group">
+        <div class="bg-zinc-900 border-2 border-dashed border-zinc-700 rounded-xl p-4 hover:border-zinc-600 hover:bg-zinc-800/50 transition-all duration-200 cursor-pointer group flex-1">
           <div class="flex flex-col items-center justify-center h-full w-full gap-3">
             <!-- Case à cocher centrée en haut -->
             <button
@@ -97,7 +97,7 @@
                   {getGoalText(goalNumber as 1 | 2 | 3)}
                 </span>
               {:else}
-                <span class="text-sm text-neutral-500 italic">Cliquez pour ajouter un objectif</span>
+                <span class="text-sm text-neutral-500 italic">Ajouter un objectif</span>
               {/if}
             </button>
           </div>
@@ -107,4 +107,3 @@
   {:else}
     <div class="text-center py-4 text-gray-400">Aucun objectif défini</div>
   {/if}
-</div>

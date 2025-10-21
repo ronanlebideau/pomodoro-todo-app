@@ -16,7 +16,7 @@ function playEndTimerSound() {
 			console.error('Erreur lors de la lecture du son de fin de minuteur:', e);
 		});
 		
-		// Lecture du son
+		// Lecture du son (toujours joué, indépendamment du paramètre soundEnabled)
 		audio.play().catch(error => {
 			console.warn('Impossible de lire le son de fin de minuteur:', error);
 		});
@@ -50,6 +50,7 @@ interface PomodoroStoreState {
 	currentSessionId: number | null;
 	config: PomodoroConfig;
 	startTime?: number; // Heure de départ du timer actuel
+	soundEnabled: boolean; // État du son d'ambiance
 }
 
 const initialState: PomodoroStoreState = {
@@ -59,7 +60,8 @@ const initialState: PomodoroStoreState = {
 	totalSeconds: 0,
 	completedSessions: 0,
 	currentSessionId: null,
-	config: defaultConfig
+	config: defaultConfig,
+	soundEnabled: true // Son activé par défaut
 };
 
 function createPomodoroStore() {
@@ -71,6 +73,15 @@ function playBackgroundAudio() {
     if (!browser) return;
 
     try {
+        // Vérifier si le son est désactivé
+        update(state => {
+            if (!state.soundEnabled) {
+                stopBackgroundAudio();
+                return state;
+            }
+            return state;
+        });
+
         // Si l'audio est déjà en cours de lecture, ne rien faire
         if (backgroundAudio && !backgroundAudio.paused) return;
 
@@ -440,16 +451,23 @@ function resumeBackgroundAudio() {
 			set(initialState);
 		},
 
-		// Nouvelle méthode pour mettre à jour la configuration
-		updateConfig: (newConfig: Partial<PomodoroConfig>) => {
-			update(state => ({
-				...state,
-				config: {
-					...state.config,
-					...newConfig
+		toggleSound: () => {
+			update(state => {
+				const newState = { ...state, soundEnabled: !state.soundEnabled };
+				if (!newState.soundEnabled) {
+					stopBackgroundAudio();
+				} else if (state.state === 'focus') {
+					playBackgroundAudio();
 				}
-			}));
-		}
+				return newState;
+			});
+		},
+		updateConfig: (newConfig: Partial<PomodoroConfig>) => {
+			update(state => {
+				const updatedConfig = { ...state.config, ...newConfig };
+				return { ...state, config: updatedConfig };
+			});
+		},
 	};
 
 	function startTick() {

@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { taskStore } from '$lib/stores/taskStore';
-	import { Brain, Check, Clock, Edit, Trash2, Play, Square, Calendar, Plus } from 'lucide-svelte';
+	import { Brain, Check, Clock, Edit, Trash2, Play, Square, Plus } from 'lucide-svelte';
 	import type { Task } from '$lib/db';
-	import InlineDatePicker from './InlineDatePicker.svelte';
 	import { getFocusSessionsByTask } from '$lib/utils/countFocusSessions';
 
 	export let onEditTask: (task: Task) => void;
@@ -12,24 +11,56 @@
 	let sortBy: 'scheduled' | 'priority' = 'scheduled';
 	let focusSessions: Record<number, number> = {};
 
-	let openDatePickerTaskId: number | null = null;
 	let openPriorityDropdownTaskId: number | null = null;
 
-	onMount(async () => {
+	// Gestionnaire de clic en dehors du menu de priorité
+	function handleClickOutside(event: MouseEvent) {
+		const target = event.target as HTMLElement;
+		
+		// Fermer le menu de priorité si on clique en dehors
+		if (!target.closest('.priority-dropdown') && !target.closest('.priority-dropdown-button')) {
+			openPriorityDropdownTaskId = null;
+		}
+	}
+
+	onMount(() => {
 		document.addEventListener('click', handleClickOutside);
-		focusSessions = await getFocusSessionsByTask();
+		
+		// Charger les sessions de focus de manière asynchrone
+		getFocusSessionsByTask().then(sessions => {
+			focusSessions = sessions;
+		});
+		
+		// Nettoyage lors du démontage du composant
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
 	});
 
-	onDestroy(() => {
-		document.removeEventListener('click', handleClickOutside);
-	});
+	$: filteredTasks = $taskStore.tasks ? $taskStore.tasks.filter((task: Task) => {
+		if (filter === 'active') return !task.completed;
+		if (filter === 'completed') return task.completed;
+		return true;
+	}).sort((a: Task, b: Task) => {
+		if (sortBy === 'priority') {
+			const priorityOrder = { high: 0, medium: 1, low: 2 };
+			return (priorityOrder[a.priority as keyof typeof priorityOrder] || 0) - 
+			       (priorityOrder[b.priority as keyof typeof priorityOrder] || 0);
+		}
+		if (sortBy === 'scheduled') {
+			if (!a.scheduledDate && !b.scheduledDate) return b.createdAt - a.createdAt;
+			if (!a.scheduledDate) return 1;
+			if (!b.scheduledDate) return -1;
+			return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+		}
+		return b.createdAt - a.createdAt;
+	}) : [];
 
 	async function handleDateChange(taskId: number, newDate: string) {
 		try {
 			await taskStore.updateTask(taskId, {
 				scheduledDate: newDate || undefined
 			});
-			openDatePickerTaskId = null;
 		} catch (error) {
 			console.error('Error updating task date:', error);
 		}
@@ -47,35 +78,6 @@
 			console.error('Error updating task priority:', error);
 		}
 	}
-
-	function toggleDatePicker(taskId: number) {
-		openDatePickerTaskId = openDatePickerTaskId === taskId ? null : taskId;
-	}
-
-	function handleClickOutside(event: MouseEvent) {
-		const target = event.target as HTMLElement;
-		if (!target.closest('.priority-dropdown') && !target.closest('.date-picker')) {
-			openPriorityDropdownTaskId = null;
-		}
-	}
-
-	$: filteredTasks = $taskStore.tasks ? $taskStore.tasks.filter(task => {
-		if (filter === 'active') return !task.completed;
-		if (filter === 'completed') return task.completed;
-		return true;
-	}).sort((a, b) => {
-		if (sortBy === 'priority') {
-			const priorityOrder = { high: 0, medium: 1, low: 2 };
-			return priorityOrder[a.priority] - priorityOrder[b.priority];
-		}
-		if (sortBy === 'scheduled') {
-			if (!a.scheduledDate && !b.scheduledDate) return b.createdAt - a.createdAt;
-			if (!a.scheduledDate) return 1;
-			if (!b.scheduledDate) return -1;
-			return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
-		}
-		return b.createdAt - a.createdAt;
-	}) : [];
 
 	async function handleToggleComplete(id: number) {
 		await taskStore.toggleComplete(id);
@@ -99,7 +101,7 @@
 		switch (priority) {
 			case 'high': return 'text-red-500';
 			case 'medium': return 'text-yellow-500';
-			case 'low': return 'text-blue-500';
+			case 'low': return 'text-green-500';
 			default: return 'text-gray-400';
 		}
 	}
@@ -155,7 +157,7 @@
 	}
 </style>
 
-<div class="space-y-4">
+<div class="space-y-3">
 	<!-- Filters and Sort -->
 	<div class="flex flex-wrap gap-4 items-center justify-between">
 		<div class="flex gap-2">
@@ -237,139 +239,167 @@
 				<span class="font-medium">Ajouter une tâche</span>
 			</div>
 		</div>
+		<!--Scrollable container-->
 
-		{#if $taskStore.loading}
-			<div class="flex justify-center py-8">
-				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" data-tooltip="Chargement en cours" aria-label="Chargement en cours"></div>
-			</div>
-		{:else if filteredTasks.length === 0}
-			<div class="text-center py-8 text-zinc-500">
-				<p>Aucune tâche {filter === 'active' ? 'active' : 'terminée'} pour le moment</p>
-			</div>
-		{:else}
-			{#each filteredTasks as task (task.id)}
-				<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
-					<div class="flex items-start gap-4">
-						<!-- Checkbox -->
-						<button
-							on:click={() => handleToggleComplete(task.id!)}
-							class="mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors {task.completed ? 'bg-green-600 border-green-600' : 'border-zinc-600 hover:border-zinc-500'}"
-							data-tooltip={task.completed ? 'Marquer comme non terminée' : 'Marquer comme terminée'}
-							aria-label={task.completed ? 'Marquer comme non terminée' : 'Marquer comme terminée'}
-						>
-							{#if task.completed}
-								<Check class="w-3 h-3 text-white" />
-							{/if}
-						</button>
+			{#if $taskStore.loading}
+				<div class="flex justify-center py-8">
+					<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" data-tooltip="Chargement en cours" aria-label="Chargement en cours"></div>
+				</div>
+			{:else if filteredTasks.length === 0}
+				<div class="text-center py-8 text-zinc-500">
+					<p>Aucune tâche {filter === 'active' ? 'active' : 'terminée'} pour le moment</p>
+				</div>
+			{:else}
+				{#each filteredTasks as task (task.id)}
+					<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
+						<div class="flex items-start gap-4">
+							<!-- Checkbox -->
+							<button
+								on:click={() => handleToggleComplete(task.id!)}
+								class="mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors {task.completed ? 'bg-green-600 border-green-600' : 'border-zinc-600 hover:border-zinc-500'}"
+								data-tooltip={task.completed ? 'Marquer comme non terminée' : 'Marquer comme terminée'}
+								aria-label={task.completed ? 'Marquer comme non terminée' : 'Marquer comme terminée'}
+							>
+								{#if task.completed}
+									<Check class="w-3 h-3 text-white" />
+								{/if}
+							</button>
 
-						<div class="flex-1 min-w-0">
-							<div class="flex items-start justify-between gap-4">
-								<div class="flex-1">
-									<h3 class="text-white font-medium {task.completed ? 'line-through text-zinc-500' : ''}">
-										{task.title}
-									</h3>
-									{#if task.description}
-										<p class="text-sm text-zinc-400 mt-1">{task.description}</p>
-									{/if}
+							<div class="flex-1 min-w-0">
+								<div class="flex items-start justify-between gap-4">
+									<div class="flex-1">
+										<h3 class="text-white font-medium {task.completed ? 'line-through text-zinc-500' : ''}">
+											{task.title}
+										</h3>
+										{#if task.description}
+											<p class="text-sm text-zinc-400 mt-1">{task.description}</p>
+										{/if}
 
-									<div class="flex flex-wrap gap-2 mt-2">
-										<div 
-											class="flex items-center gap-1 text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded"
-											data-tooltip={getPriorityLabel(task.priority)}
-											aria-label={getPriorityLabel(task.priority)}
-										>
-											<div class={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`}></div>
-											<span class="capitalize">{task.priority === 'high' ? 'Haute' : task.priority === 'medium' ? 'Moyenne' : 'Basse'}</span>
+										<div class="flex flex-wrap gap-2 mt-2">
+											<div class="relative date-picker-container">
+											<button
+												on:click|stopPropagation={() => togglePriorityDropdown(task.id!)}
+												class="flex items-center gap-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded transition-colors"
+												data-tooltip="Modifier la priorité"
+												aria-label="Modifier la priorité"
+											>
+												<div class={`w-2 h-2 rounded-full ${getPriorityColor(task.priority).replace('text-', 'bg-')}`}></div>
+												<span class="capitalize">{task.priority === 'high' ? 'Haute' : task.priority === 'medium' ? 'Moyenne' : 'Basse'}</span>
+											</button>
+
+											{#if openPriorityDropdownTaskId === task.id}
+												<div class="absolute z-10 mt-1 w-32 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg overflow-hidden">
+													<button
+														on:click|stopPropagation={() => handlePriorityChange(task.id!, 'high')}
+														class="w-full text-left px-3 py-2 text-sm hover:bg-zinc-700 flex items-center gap-2"
+													>
+														<div class="w-2 h-2 rounded-full bg-red-500"></div>
+														<span>Haute</span>
+														{#if task.priority === 'high'}<Check class="w-3.5 h-3.5 ml-auto" />{/if}
+													</button>
+													<button
+														on:click|stopPropagation={() => handlePriorityChange(task.id!, 'medium')}
+														class="w-full text-left px-3 py-2 text-sm hover:bg-zinc-700 flex items-center gap-2"
+													>
+														<div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+														<span>Moyenne</span>
+														{#if task.priority === 'medium'}<Check class="w-3.5 h-3.5 ml-auto" />{/if}
+													</button>
+													<button
+														on:click|stopPropagation={() => handlePriorityChange(task.id!, 'low')}
+														class="w-full text-left px-3 py-2 text-sm hover:bg-zinc-700 flex items-center gap-2"
+													>
+														<div class="w-2 h-2 rounded-full bg-green-500"></div>
+														<span>Basse</span>
+														{#if task.priority === 'low'}<Check class="w-3.5 h-3.5 ml-auto" />{/if}
+													</button>
+												</div>
+											{/if}
 										</div>
 
-										{#if task.scheduledDate}
-											<div 
-												class="flex items-center gap-1 text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded"
-												data-tooltip="Date prévue : {formatFullDate(task.scheduledDate)}"
-												aria-label="Date prévue : {formatFullDate(task.scheduledDate)}"
-											>
-												<Calendar class="w-3 h-3" />
-												<span>{new Date(task.scheduledDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-											</div>
-										{/if}
+											{#if task.scheduledDate}
+												<div class="flex items-center gap-1 text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded">
+													<span>{new Date(task.scheduledDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+												</div>
+											{/if}
 
-										{#if task.tags && task.tags.length > 0}
-											{#each task.tags as tag}
-												<span 
-													class="text-xs bg-blue-900/30 text-blue-400 px-2 py-1 rounded"
-													data-tooltip="Tag : {tag}"
-													aria-label="Tag : {tag}"
-												>
-													{tag}
-												</span>
-											{/each}
-										{/if}
+											{#if task.tags && task.tags.length > 0}
+												{#each task.tags as tag}
+													<span 
+														class="text-xs bg-blue-900/30 text-blue-400 px-2 py-1 rounded"
+														data-tooltip="Tag : {tag}"
+														aria-label="Tag : {tag}"
+													>
+														{tag}
+													</span>
+												{/each}
+											{/if}
 
-										
+											
+										</div>
 									</div>
-								</div>
 
-								<div class="flex gap-2">
-									<!-- Affichage du compteur de sessions de focus -->
-										{#if focusSessions[task.id!] > 0}
-											<div 
-												class="flex items-center gap-1 text-xs bg-blue-900/30 text-blue-400 px-2 py-1 rounded"
-												data-tooltip="{focusSessions[task.id!]} session{focusSessions[task.id!] > 1 ? 's' : ''} de focus"
-												aria-label="{focusSessions[task.id!]} session{focusSessions[task.id!] > 1 ? 's' : ''} de focus"
+									<div class="flex gap-2">
+										<!-- Affichage du compteur de sessions de focus -->
+											{#if focusSessions[task.id!] > 0}
+												<div 
+													class="flex items-center gap-1 text-xs bg-blue-900/30 text-blue-400 px-2 py-1 rounded"
+													data-tooltip="{focusSessions[task.id!]} session{focusSessions[task.id!] > 1 ? 's' : ''} de focus"
+													aria-label="{focusSessions[task.id!]} session{focusSessions[task.id!] > 1 ? 's' : ''} de focus"
+												>
+													<Brain class="w-4 h-4" />
+													<span>{focusSessions[task.id!]}</span>
+												</div>
+											{/if}
+										{#if $taskStore.activeTimeLog?.taskId === task.id}
+											<button
+												on:click={handleStopTracking}
+												class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+												data-tooltip="Arrêter le suivi du temps"
+												aria-label="Arrêter le suivi du temps"
 											>
-												<Brain class="w-4 h-4" />
-												<span>{focusSessions[task.id!]}</span>
-											</div>
+												<Square class="w-4 h-4" />
+											</button>
+										{:else}
+											<button
+												on:click={() => handleStartTracking(task.id!)}
+												class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+												data-tooltip="Démarrer le suivi du temps"
+												aria-label="Démarrer le suivi du temps pour cette tâche"
+											>
+												<Play class="w-4 h-4" />
+											</button>
 										{/if}
-									{#if $taskStore.activeTimeLog?.taskId === task.id}
-										<button
-											on:click={handleStopTracking}
-											class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-											data-tooltip="Arrêter le suivi du temps"
-											aria-label="Arrêter le suivi du temps"
-										>
-											<Square class="w-4 h-4" />
-										</button>
-									{:else}
-										<button
-											on:click={() => handleStartTracking(task.id!)}
-											class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-											data-tooltip="Démarrer le suivi du temps"
-											aria-label="Démarrer le suivi du temps pour cette tâche"
-										>
-											<Play class="w-4 h-4" />
-										</button>
-									{/if}
 
-									<button
-										on:click={(e) => {
-											e.stopPropagation();
-											onEditTask(task);
-										}}
-										class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-										data-tooltip="Modifier la tâche"
-										aria-label="Modifier la tâche"
-									>
-										<Edit class="w-4 h-4" />
-									</button>
+										<button
+											on:click={(e) => {
+												e.stopPropagation();
+												onEditTask(task);
+											}}
+											class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+											data-tooltip="Modifier la tâche"
+											aria-label="Modifier la tâche"
+										>
+											<Edit class="w-4 h-4" />
+										</button>
 
-									<button
-										on:click={(e) => {
-											e.stopPropagation();
-											handleDelete(task.id!);
-										}}
-										class="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-900/30 rounded-lg transition-colors"
-										data-tooltip="Supprimer la tâche"
-										aria-label="Supprimer la tâche"
-									>
-										<Trash2 class="w-4 h-4" />
-									</button>
+										<button
+											on:click={(e) => {
+												e.stopPropagation();
+												handleDelete(task.id!);
+											}}
+											class="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-900/30 rounded-lg transition-colors"
+											data-tooltip="Supprimer la tâche"
+											aria-label="Supprimer la tâche"
+										>
+											<Trash2 class="w-4 h-4" />
+										</button>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			{/each}
-		{/if}
+				{/each}
+			{/if}
 	</div>
 </div>

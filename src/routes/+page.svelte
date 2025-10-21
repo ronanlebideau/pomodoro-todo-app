@@ -76,23 +76,23 @@
 	<title>Rorodoro Todo</title>
 </svelte:head>
 
-<div class="min-h-screen bg-black text-white">
-	<div class="flex flex-col h-screen">
-		<main class="p-8 flex-1">
-			<div class="h-full grid grid-cols-2 lg:grid-cols-2 gap-8">
+<div class="h-dvh overflow-hidden p-4 bg-black grid grid-cols-2 gap-4">
 				<!-- Left Column: Rorodoro Timer -->
-				<div class="lg:col-span-1 h-full">
+				<div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex items-center justify-center">
 					<ClientOnly><PomodoroTimer /></ClientOnly>
 				</div>
 
 				<!-- Right Column: Tasks/Timeline/Stats -->
-				<div class="h-full lg:col-span-1 space-y-6">
+				<div class="flex flex-col gap-4 min-h-0">
 					<!-- Daily Goals Display -->
+					 <div class="bg-zinc-900 border border-zinc-800 rounded-2xl flex flex-col p-4 basis-1/3 shrink-0">
 					<DailyGoalsDisplay />
+					</div>
 
 					<!-- Tabs -->
-					 <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-4 mb-4">
+					 <div class="bg-zinc-900 border border-zinc-800 rounded-2xl flex flex-col p-4 basis-2/3 min-h-0 overflow-y-auto">
 						<div class="flex gap-2 border-b border-zinc-800">
+							<!-- Tasks Tab -->
 							<button
 								on:click={() => activeTab = 'tasks'}
 								class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'tasks' ? 'border-blue-600 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
@@ -100,6 +100,7 @@
 								<CheckSquare class="w-4 h-4" />
 								Tâches
 							</button>
+							<!-- Planning Tab -->
 							<button
 								on:click={() => activeTab = 'planning'}
 								class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'planning' ? 'border-blue-600 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
@@ -107,6 +108,7 @@
 								<Calendar class="w-4 h-4" />
 								Planning
 							</button>
+							<!-- Stats Tab -->
 							<button
 								on:click={() => activeTab = 'stats'}
 								class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'stats' ? 'border-blue-600 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
@@ -141,9 +143,6 @@
 						</div>
 					</div>
 				</div>
-			</div>
-		</main>
-	</div>
 </div>
 
 <!-- Task Form Modal -->
