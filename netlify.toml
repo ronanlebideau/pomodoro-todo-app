@@ -1,10 +1,11 @@
 [build]
   command = "npm run build"
   publish = "build"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
-  NPM_VERSION = "9"
+  NPM_VERSION = "9.6.0"
 
 [[redirects]]
   from = "/*"
@@ -19,7 +20,8 @@
 
 [dev]
   framework = "#custom"
-  command = "npm run dev"
+  command = "vite dev"
   targetPort = 5173
-  publish = "dist"
-  autoLaunch = true
+  port = 8888
+  publish = "build"
+  autoLaunch = false
