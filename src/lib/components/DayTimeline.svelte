@@ -91,13 +91,13 @@
 			<div class="flex gap-2">
 				<button
 					on:click={() => viewMode = 'day'}
-					class="px-3 py-1 rounded text-sm font-medium transition-colors {viewMode === 'day' ? 'bg-red-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
+					class="px-3 py-1 rounded text-sm font-medium transition-colors {viewMode === 'day' ? 'bg-accent-500 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
 				>
 					Journée
 				</button>
 				<button
 					on:click={() => viewMode = 'week'}
-					class="px-3 py-1 rounded text-sm font-medium transition-colors {viewMode === 'week' ? 'bg-red-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
+					class="px-3 py-1 rounded text-sm font-medium transition-colors {viewMode === 'week' ? 'bg-accent-500 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
 				>
 					Semaine
 				</button>

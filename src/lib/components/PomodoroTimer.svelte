@@ -140,7 +140,7 @@
 		</button>
 
 		{#if showTaskDropdown}
-			<div class="absolute z-10 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg">
+			<div class="absolute z-10 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 shadow-lg">
 				<div class="max-h-48 overflow-y-auto">
 					<button
 						class="w-full px-3 py-2 text-left hover:bg-zinc-700 transition-colors"
@@ -214,7 +214,7 @@
 			<!-- Bouton Focus -->
 			<button
 				on:click={handleStart}
-				class="w-full max-w-md py-3 px-6 bg-blue-600 hover:bg-blue-900 text-white font-medium rounded-3xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+				class="w-full max-w-md py-3 px-6 bg-accent-600 hover:bg-white text-white hover:text-black font-medium rounded-3xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
 			>
 				<Brain class="w-5 h-5" />
 				<span>Démarrer un Focus</span>

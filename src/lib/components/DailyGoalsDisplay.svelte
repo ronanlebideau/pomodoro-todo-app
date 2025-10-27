@@ -51,7 +51,7 @@
 
   <div class="flex items-center justify-between mb-3">
     <div class="flex items-center gap-2">
-      <Target class="w-5 h-5 text-blue-400" />
+      <Target class="w-5 h-5 text-accent-500" />
       <h3 class="font-medium text-white">Objectifs</h3>
     </div>
     <button

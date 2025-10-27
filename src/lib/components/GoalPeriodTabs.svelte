@@ -23,7 +23,7 @@
   {#each periods as period}
     <button
       on:click={() => setPeriod(period.id as any)}
-      class="px-3 py-1 text-sm rounded-lg transition-colors {activePeriod === period.id ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
+      class="px-3 py-1 text-sm rounded-lg transition-colors {activePeriod === period.id ? 'bg-accent-500 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
       data-tooltip="Afficher les objectifs {period.label.toLowerCase()}"
       aria-label="Afficher les objectifs {period.label.toLowerCase()}"
     >

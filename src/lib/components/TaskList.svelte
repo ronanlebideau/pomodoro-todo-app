@@ -163,7 +163,7 @@
 		<div class="flex gap-2">
 			<button
 				on:click={() => filter = 'active'}
-				class="px-3 py-1 text-sm rounded-lg transition-colors {filter === 'active' ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
+				class="px-3 py-1 text-sm rounded-lg transition-colors {filter === 'active' ? 'bg-accent-500 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
 				data-tooltip="Afficher les tâches actives"
 				aria-label="Afficher les tâches actives"
 			>
@@ -171,7 +171,7 @@
 			</button>
 			<button
 				on:click={() => filter = 'completed'}
-				class="px-3 py-1 text-sm rounded-lg transition-colors {filter === 'completed' ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
+				class="px-3 py-1 text-sm rounded-lg transition-colors {filter === 'completed' ? 'bg-accent-500 text-white' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
 				data-tooltip="Afficher les tâches terminées"
 				aria-label="Afficher les tâches terminées"
 			>
@@ -181,7 +181,7 @@
 		<div class="flex gap-2">
 			<select
 				bind:value={sortBy}
-				class="bg-zinc-800 text-zinc-300 text-sm rounded-lg px-3 py-1 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				class="bg-zinc-800 text-zinc-300 text-sm rounded-lg px-3 py-1 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-accent-500"
 				data-tooltip="Trier les tâches"
 				aria-label="Trier les tâches"
 			>
@@ -234,7 +234,7 @@
 				}
 			}}
 		>
-			<div class="flex items-center gap-3 text-zinc-500 group-hover:text-blue-400 transition-colors">
+			<div class="flex items-center gap-3 text-zinc-500 group-hover:text-accent-500 transition-colors">
 				<Plus class="w-5 h-5" />
 				<span class="font-medium">Ajouter une tâche</span>
 			</div>
@@ -243,7 +243,7 @@
 
 			{#if $taskStore.loading}
 				<div class="flex justify-center py-8">
-					<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" data-tooltip="Chargement en cours" aria-label="Chargement en cours"></div>
+					<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-500" data-tooltip="Chargement en cours" aria-label="Chargement en cours"></div>
 				</div>
 			{:else if filteredTasks.length === 0}
 				<div class="text-center py-8 text-zinc-500">
@@ -256,7 +256,7 @@
 							<!-- Checkbox -->
 							<button
 								on:click={() => handleToggleComplete(task.id!)}
-								class="mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors {task.completed ? 'bg-green-600 border-green-600' : 'border-zinc-600 hover:border-zinc-500'}"
+								class="mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors {task.completed ? 'bg-accent-600 border-accent-600' : 'border-zinc-600 hover:border-zinc-500'}"
 								data-tooltip={task.completed ? 'Marquer comme non terminée' : 'Marquer comme terminée'}
 								aria-label={task.completed ? 'Marquer comme non terminée' : 'Marquer comme terminée'}
 							>
@@ -326,7 +326,7 @@
 											{#if task.tags && task.tags.length > 0}
 												{#each task.tags as tag}
 													<span 
-														class="text-xs bg-blue-900/30 text-blue-400 px-2 py-1 rounded"
+														class="text-xs bg-accent-500/30 text-accent-500 border-accent-500 border opacity-50 px-2 py-1 rounded"
 														data-tooltip="Tag : {tag}"
 														aria-label="Tag : {tag}"
 													>
@@ -343,7 +343,7 @@
 										<!-- Affichage du compteur de sessions de focus -->
 											{#if focusSessions[task.id!] > 0}
 												<div 
-													class="flex items-center gap-1 text-xs bg-blue-900/30 text-blue-400 px-2 py-1 rounded"
+													class="flex items-center gap-1 text-xs bg-accent-500/30 text-accent-600 px-2 py-1 rounded"
 													data-tooltip="{focusSessions[task.id!]} session{focusSessions[task.id!] > 1 ? 's' : ''} de focus"
 													aria-label="{focusSessions[task.id!]} session{focusSessions[task.id!] > 1 ? 's' : ''} de focus"
 												>
@@ -363,7 +363,7 @@
 										{:else}
 											<button
 												on:click={() => handleStartTracking(task.id!)}
-												class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+												class="p-2 bg-accent-600 hover:bg-accent-500 text-white rounded-lg transition-colors"
 												data-tooltip="Démarrer le suivi du temps"
 												aria-label="Démarrer le suivi du temps pour cette tâche"
 											>

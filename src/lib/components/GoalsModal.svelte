@@ -102,7 +102,7 @@
             bind:value={goal2}
             placeholder={`Objectif 2 ${periodLabels[activePeriod]}`}
             class="w-full bg-zinc-700 border border-zinc-600 rounded-md px-3 py-2 text-white 
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                   focus:outline-none focus:ring-2 focus:ring-accent-500 placeholder-gray-500"
           />
         </div>
 
@@ -114,7 +114,7 @@
             bind:value={goal3}
             placeholder={`Objectif 3 ${periodLabels[activePeriod]}`}
             class="w-full bg-zinc-700 border border-zinc-600 rounded-md px-3 py-2 text-white 
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                   focus:outline-none focus:ring-2 focus:ring-accent-500 placeholder-gray-500"
           />
         </div>
 
@@ -128,8 +128,8 @@
           </button>
           <button
             type="submit"
-            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 
-                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            class="px-4 py-2 bg-zinc-700 text-white text-sm font-medium rounded-md hover:bg-blue-700 
+                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500"
           >
             Enregistrer
           </button>

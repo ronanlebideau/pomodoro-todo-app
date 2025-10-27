@@ -202,7 +202,7 @@
 			<div class="flex gap-3 pt-4">
 				<button
 					type="submit"
-					class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+					class="flex-1 px-6 py-3 bg-zinc-700 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
 				>
 					{task ? 'Mettre à jour' : 'Créer'}
 				</button>

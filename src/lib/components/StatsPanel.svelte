@@ -126,21 +126,21 @@
 	<div class="flex gap-2 border-b border-zinc-800">
 		<button
 			on:click={() => activeTab = 'day'}
-			class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'day' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
+			class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'day' ? 'border-accent-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
 		>
 			<Calendar class="w-4 h-4" />
 			Jour
 		</button>
 		<button
 			on:click={() => activeTab = 'week'}
-			class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'week' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
+			class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'week' ? 'border-accent-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
 		>
 			<BarChart3 class="w-4 h-4" />
 			Semaine
 		</button>
 		<button
 			on:click={() => activeTab = 'global'}
-			class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'global' ? 'border-red-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
+			class="flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 {activeTab === 'global' ? 'border-accent-500 text-white' : 'border-transparent text-zinc-400 hover:text-white'}"
 		>
 			<TrendingUp class="w-4 h-4" />
 			Global
