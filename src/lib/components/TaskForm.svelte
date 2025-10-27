@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { taskStore } from '../stores/taskStore';
-	import { X } from 'lucide-svelte';
+	import X from 'lucide-svelte/icons/X.svelte';
 	import type { Task } from '../db';
 
 	export let task: Task | null = null;

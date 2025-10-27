@@ -11,11 +11,6 @@
   node_bundler = "esbuild"
   external_node_modules = ["@sveltejs/kit"]
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
 [dev]
   framework = "#custom"
   command = "npm run dev"
