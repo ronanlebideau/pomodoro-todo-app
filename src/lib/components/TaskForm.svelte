@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { taskStore } from '$lib/stores/taskStore';
+	import { taskStore } from '../stores/taskStore';
 	import { X } from 'lucide-svelte';
-	import type { Task } from '$lib/db';
+	import type { Task } from '../db';
 
 	export let task: Task | null = null;
 	export let onClose: () => void;
@@ -26,7 +26,7 @@
 			scheduledEndTime: scheduledEndTime || undefined,
 			estimatedMinutes: estimatedMinutes ? parseInt(String(estimatedMinutes)) : undefined,
 			priority,
-			tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+			tags: tags.split(',').map((t: string) => t.trim()).filter(Boolean),
 			completed: task?.completed || false
 		};
 

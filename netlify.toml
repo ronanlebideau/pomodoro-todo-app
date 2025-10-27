@@ -1,11 +1,15 @@
 [build]
   command = "npm run build"
-  publish = "build"
-  functions = "netlify/functions"
+  publish = ".svelte-kit/output/static"
+  functions = ".svelte-kit/output/server"
 
 [build.environment]
-  NODE_VERSION = "18"
-  NPM_VERSION = "9.6.0"
+  NODE_VERSION = "20"
+  NPM_VERSION = "10.2.4"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@sveltejs/kit"]
 
 [[redirects]]
   from = "/*"
@@ -13,8 +17,9 @@
   status = 200
 
 [dev]
-  command = "vite dev"
+  framework = "#custom"
+  command = "npm run dev"
   targetPort = 5173
   port = 8888
-  publish = "build"
+  publish = ".svelte-kit/output/static"
   autoLaunch = false
