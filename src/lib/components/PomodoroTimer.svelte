@@ -2,15 +2,17 @@
 	import { onMount } from 'svelte';
 	import { pomodoroStore, formattedTime, pomodoroProgress } from '$lib/stores/pomodoroStore';
 	import { taskStore } from '$lib/stores/taskStore';
-	import Play from 'lucide-svelte/icons/play.svelte';
-	import Pause from 'lucide-svelte/icons/pause.svelte';
-	import Square from 'lucide-svelte/icons/square.svelte';
-	import Coffee from 'lucide-svelte/icons/coffee.svelte';
-	import Brain from 'lucide-svelte/icons/brain.svelte';
-	import Volume2 from 'lucide-svelte/icons/volume-2.svelte';
-	import VolumeX from 'lucide-svelte/icons/volume-x.svelte';
-	import Volume from 'lucide-svelte/icons/volume.svelte';
-	import Volume1 from 'lucide-svelte/icons/volume-1.svelte';
+	import {
+  Play,
+  Pause,
+  Square,
+  Coffee,
+  Brain,
+  Volume2,
+  VolumeX,
+  Volume,
+  Volume1
+} from '$lib/icons';
 
 	export let taskId: number | null = null;
 
