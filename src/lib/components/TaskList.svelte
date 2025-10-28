@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { taskStore } from '$lib/stores/taskStore';
-	import { Brain, Check, Clock, Edit, Trash2, Play, Square, Plus } from 'lucide-svelte';
+	import Brain from 'lucide-svelte/icons/brain.svelte';
+	import Check from 'lucide-svelte/icons/check.svelte';
+	import Clock from 'lucide-svelte/icons/clock.svelte';
+	import Edit from 'lucide-svelte/icons/edit.svelte';
+	import Trash2 from 'lucide-svelte/icons/trash-2.svelte';
+	import Play from 'lucide-svelte/icons/play.svelte';
+	import Square from 'lucide-svelte/icons/square.svelte';
+	import Plus from 'lucide-svelte/icons/plus.svelte';
 	import type { Task } from '$lib/db';
 	import { getFocusSessionsByTask } from '$lib/utils/countFocusSessions';
 

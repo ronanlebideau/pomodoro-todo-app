@@ -3,7 +3,14 @@
 	import { db } from '$lib/db';
 	import type { Task } from '$lib/db';
 	import { taskStore } from '$lib/stores/taskStore';
-	import { Download, Clock, CheckCircle, Target, Calendar, BarChart3, TrendingUp, Timer } from 'lucide-svelte';
+	import Download from 'lucide-svelte/icons/download.svelte';
+	import Clock from 'lucide-svelte/icons/clock.svelte';
+	import CheckCircle from 'lucide-svelte/icons/check-circle.svelte';
+	import Target from 'lucide-svelte/icons/target.svelte';
+	import Calendar from 'lucide-svelte/icons/calendar.svelte';
+	import BarChart3 from 'lucide-svelte/icons/bar-chart-3.svelte';
+	import TrendingUp from 'lucide-svelte/icons/trending-up.svelte';
+	import Timer from 'lucide-svelte/icons/timer.svelte';
 
 	export let selectedDate: string = '';
 

@@ -10,7 +10,10 @@
 	import GoalsModal from '$lib/components/GoalsModal.svelte';
 	import SettingsModal from '$lib/components/SettingsModal.svelte';
 	import DayTimeline from '$lib/components/DayTimeline.svelte';
-	import { Calendar, BarChart3, CheckSquare, Settings } from 'lucide-svelte';
+	import Calendar from 'lucide-svelte/icons/calendar.svelte';
+	import BarChart3 from 'lucide-svelte/icons/bar-chart-3.svelte';
+	import CheckSquare from 'lucide-svelte/icons/check-square.svelte';
+	import Settings from 'lucide-svelte/icons/settings.svelte';
 	import type { Task } from '$lib/db';
 	import ClientOnly from '$lib/ClientOnly.svelte';
 

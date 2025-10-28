@@ -1,6 +1,9 @@
 <script lang="ts">
   import { goalsStore } from '$lib/stores/goalsStore';
-  import { CheckCircle2, Circle, Target, Edit3 } from 'lucide-svelte';
+  import CheckCircle2 from 'lucide-svelte/icons/check-circle-2.svelte';
+  import Circle from 'lucide-svelte/icons/circle.svelte';
+  import Target from 'lucide-svelte/icons/target.svelte';
+  import Edit3 from 'lucide-svelte/icons/edit-3.svelte';
   import { onMount } from 'svelte';
   import GoalPeriodTabs from './GoalPeriodTabs.svelte';
 

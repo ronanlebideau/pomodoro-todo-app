@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { X, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import X from 'lucide-svelte/icons/x.svelte';
+	import ChevronLeft from 'lucide-svelte/icons/chevron-left.svelte';
+	import ChevronRight from 'lucide-svelte/icons/chevron-right.svelte';
 
 	const dispatch = createEventDispatcher();
 
