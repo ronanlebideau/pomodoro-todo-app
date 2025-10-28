@@ -1,7 +1,6 @@
 [build]
   command = "npm run build"
-  publish = ".svelte-kit/output/static"
-  functions = ".svelte-kit/output/server"
+  publish = ".netlify/publish"
 
 [build.environment]
   NODE_VERSION = "20"
