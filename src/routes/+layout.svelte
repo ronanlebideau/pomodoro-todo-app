@@ -1,17 +1,17 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { onMount } from 'svelte';
-	import { registerSW } from 'virtual:pwa-register';
+	// import { onMount } from 'svelte';
+	// import { registerSW } from 'virtual:pwa-register'
 
 	let { children } = $props();
 
-	onMount(() => {
-		// Enregistre le service worker pour les mises à jour
-		if ('serviceWorker' in navigator) {
-			registerSW({ immediate: true });
-		}
-	});
+	// onMount(() => {
+	// 	// Enregistre le service worker pour les mises à jour
+	// 	if ('serviceWorker' in navigator) {
+	// 		registerSW({ immediate: true });
+	// 	}
+	// });
 </script>
 
 <svelte:head>

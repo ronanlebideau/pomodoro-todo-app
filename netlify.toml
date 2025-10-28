@@ -2,43 +2,5 @@
   command = "npm run build"
   publish = ".netlify/publish"
 
-[build.environment]
-  NODE_VERSION = "20"
-  NPM_VERSION = "10.2.4"
-
 [functions]
-  node_bundler = "esbuild"
-  external_node_modules = ["@sveltejs/kit"]
   directory = ".netlify/functions"
-
-[dev]
-  framework = "#custom"
-  command = "npm run dev"
-  targetPort = 5173
-  port = 8888
-  publish = ".svelte-kit/output/static"
-  autoLaunch = false
-
-# Règles de réécriture pour gérer les chemins problématiques
-[[redirects]]
-  from = "/prerendered/*"
-  to = "/index.html"
-  status = 200
-  force = false
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
-
-# Ignorer les fichiers de build PWA dans le dossier .svelte-kit
-[[headers]]
-  for = "/.svelte-kit/output/*"
-  [headers.values]
-    X-Robots-Tag = "noindex, nofollow"
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    
-# Désactiver le traitement PWA pour Netlify
-[context.production.environment]
-  ENABLE_PWA = "false"
