@@ -9,10 +9,14 @@ const config = {
 
 	kit: {
 		adapter: adapter({
-			// Configuration pour le déploiement Edge Functions
+			// Désactive les Edge Functions
 			edge: false,
-			// Ne pas diviser le code côté serveur
-			split: false
+			// Active le mode SSR avec une seule fonction serveur
+			split: false,
+			// Force le répertoire de sortie pour la compatibilité
+			out: '.netlify/publish',
+			// Active le mode SSR
+			precompress: true
 		}),
 		// Assurez-vous que les fichiers statiques sont correctement servis
 		prerender: {
