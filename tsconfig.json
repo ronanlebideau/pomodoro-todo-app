@@ -21,6 +21,12 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "types": ["vite/client", "svelte"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.ts", "src/**/*.svelte"],
+  "include": [
+    "src/**/*.d.ts",
+    "src/**/*.js",
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "src/**/*.svelte-kit/types/**/*.d.ts"
+  ],
   "exclude": ["node_modules"]
 }

@@ -15,7 +15,8 @@
 	let priority: 'low' | 'medium' | 'high' = task?.priority || 'medium';
 	let tags = task?.tags.join(', ') || '';
 
-	async function handleSubmit() {
+	const handleSubmit = (event: Event) => {
+		event.preventDefault();
 		if (!title.trim()) return;
 
 		const taskData = {
@@ -31,13 +32,16 @@
 		};
 
 		if (task?.id) {
-			await taskStore.updateTask(task.id, taskData);
+			taskStore.updateTask(task.id, taskData).then(() => onClose());
 		} else {
-			await taskStore.addTask(taskData);
+			taskStore.addTask(taskData).then(() => onClose());
 		}
+	};
 
+	const handleClose = (event: MouseEvent) => {
+		event.preventDefault();
 		onClose();
-	}
+	};
 </script>
 
 <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -47,14 +51,15 @@
 				{task ? 'Modifier la tâche' : 'Nouvelle tâche'}
 			</h2>
 			<button
-				on:click={onClose}
+				on:click={handleClose}
 				class="text-zinc-400 hover:text-white transition-colors"
+				aria-label="Fermer"
 			>
 				<X class="w-6 h-6" />
 			</button>
 		</div>
 
-		<form on:submit|preventDefault={handleSubmit} class="p-6 space-y-4">
+		<form on:submit={handleSubmit} class="p-6 space-y-4">
 			<!-- Title -->
 			<div>
 				<label for="title" class="block text-sm font-medium text-zinc-300 mb-2">
