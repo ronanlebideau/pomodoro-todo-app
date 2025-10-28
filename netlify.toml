@@ -10,6 +10,7 @@
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["@sveltejs/kit"]
+  directory = ".netlify/functions"
 
 [dev]
   framework = "#custom"

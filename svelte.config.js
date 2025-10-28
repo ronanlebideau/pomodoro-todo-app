@@ -8,14 +8,30 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
-		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter({
-			// Configuration optionnelle de l'adaptateur Netlify
+			// Configuration pour le déploiement Edge Functions
 			edge: false,
+			// Ne pas diviser le code côté serveur
 			split: false
-		})
+		}),
+		// Assurez-vous que les fichiers statiques sont correctement servis
+		prerender: {
+			handleHttpError: 'warn',
+			handleMissingId: 'warn'
+		},
+		// Désactive le préchargement des données par défaut pour améliorer les performances
+		csp: {
+			mode: 'auto',
+			directives: {
+				'default-src': ['self'],
+				'style-src': ['self', 'unsafe-inline', 'https:'],
+				'img-src': ['self', 'data:', 'https:'],
+				'connect-src': ['self', 'https:'],
+				'font-src': ['self', 'https:'],
+				'object-src': ['none'],
+				'base-uri': ['self']
+			}
+		}
 	}
 };
 
